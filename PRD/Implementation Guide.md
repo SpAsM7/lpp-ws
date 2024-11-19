@@ -80,18 +80,18 @@
   - Metrics update automatically when data changes
 
 ### 3.2 Companies & Investments
-- [ ] Create company views
-- [ ] Implement investment tracking
-- [ ] Add data visualization
+- [ ] Create company detail views
+- [ ] Implement investment data table
+- [ ] Add portfolio metrics and visualizations
 - **Success Criteria**: 
-  - Can view list of all companies
-  - Can click into company details
-  - Shows investment amount per company
-  - Displays performance metrics with charts
-  - Can view investment breakdown by account
-  - All numbers properly formatted
-  - Charts render correctly
-  - Data updates automatically
+  - Company detail page shows all required sections (overview, metrics, growth, reports)
+  - Investment table displays all required columns with proper formatting
+  - Data is properly formatted (currencies, percentages, dates)
+  - Sorting and filtering works as expected
+  - View toggles switch between Company and Account views
+  - Charts and visualizations render correctly
+  - Performance meets requirements (< 300ms for view changes)
+  - All metrics update automatically
 
 ### 3.3 Accounts Management
 - [ ] Create account views
