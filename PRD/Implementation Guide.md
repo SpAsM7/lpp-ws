@@ -2,13 +2,13 @@
 
 ## Phase 1: Foundation Setup
 ### 1.1 Development Environment
-- [ ] Set up Next.js with TypeScript project
-- [ ] Install and configure core UI dependencies
-- [ ] Set up version control
+- [x] Set up Next.js with TypeScript project
+- [x] Install and configure core UI dependencies
+- [x] Set up version control
 - **Success Criteria**: 
-  - Running `pnpm dev` shows a styled webpage in your browser
-  - Page has shadcn UI styling (proper fonts, colors, spacing)
-  - No error messages in the browser console
+  - [x] Running `pnpm dev` shows a styled webpage in your browser
+  - [x] Page has shadcn UI styling (proper fonts, colors, spacing)
+  - [x] No error messages in the browser console
 
 ### 1.2 Supabase Setup
 - [ ] Set up Supabase project

@@ -37,12 +37,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex h-screen">
-            <Sidebar />
-            <main className="flex-1 overflow-y-auto">
-              {children}
-            </main>
-          </div>
+          <Sidebar>{children}</Sidebar>
         </ThemeProvider>
       </body>
     </html>
