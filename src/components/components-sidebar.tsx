@@ -159,7 +159,9 @@ export function Sidebar({ children }: SidebarProps) {
                   <SidebarMenuButton size="lg">
                     <div className="flex items-center gap-2">
                       <GalleryVerticalEnd className="size-5" />
-                      <span className="font-semibold">LP Portal</span>
+                      <span className="font-semibold overflow-hidden transition-[width] duration-200 ease-linear group-data-[collapsible=icon]:w-0">
+                        LP Portal
+                      </span>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
