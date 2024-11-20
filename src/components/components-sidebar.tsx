@@ -142,17 +142,8 @@ export function Sidebar({ children }: SidebarProps) {
     return pathname === url
   }
 
-  // Add new function to handle minimized sidebar clicks
-  const handleMinimizedClick = (e: React.MouseEvent, item: any) => {
-    const sidebarElement = document.querySelector('[data-collapsible="icon"]')
-    const isMinimized = sidebarElement !== null
-    
-    if (isMinimized && item.items) {
-      e.preventDefault()
-      e.stopPropagation()
-      router.push(`/${item.title.toLowerCase()}`)
-      return false
-    }
+  const isSidebarMinimized = () => {
+    return document.querySelector('[data-collapsible="icon"]') !== null
   }
 
   return (
@@ -202,10 +193,7 @@ export function Sidebar({ children }: SidebarProps) {
                               tooltip={item.title}
                               className={isActive(item.title, item.items) ? "bg-accent text-accent-foreground" : ""}
                               onClick={(e) => {
-                                const sidebarElement = document.querySelector('[data-collapsible="icon"]')
-                                const isMinimized = sidebarElement !== null
-                                
-                                if (isMinimized && item.items) {
+                                if (isSidebarMinimized() && item.items) {
                                   e.preventDefault()
                                   e.stopPropagation()
                                   router.push(`/${item.title.toLowerCase()}`)
@@ -227,11 +215,14 @@ export function Sidebar({ children }: SidebarProps) {
                             <SidebarMenuSub>
                               {item.items.map((subItem, subIndex) => (
                                 <SidebarMenuSubItem key={`sub-${index}-${subIndex}`}>
-                                  <SidebarMenuSubButton asChild>
+                                  <SidebarMenuSubButton 
+                                    asChild
+                                    className={pathname === subItem.url ? "bg-accent" : ""}
+                                  >
                                     <Link href={subItem.url}>
                                       <span className={cn(
                                         "overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0",
-                                        pathname === subItem.url && "text-primary font-medium"
+                                        pathname === subItem.url && "text-accent-foreground font-medium"
                                       )}>
                                         {subItem.title}
                                       </span>
