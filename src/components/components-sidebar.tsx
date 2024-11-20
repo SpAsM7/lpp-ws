@@ -3,7 +3,7 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   ChevronRight,
   ChevronsUpDown,
@@ -57,6 +57,7 @@ import {
   SidebarTrigger,
 } from "./ui/sidebar"
 import { Separator } from "./ui/separator"
+import { cn } from "../lib/utils"
 
 // Dynamically import icons to prevent SSR issues
 const DynamicHome = dynamic(() => import("lucide-react").then(mod => mod.Home), { ssr: false })
@@ -113,6 +114,7 @@ interface SidebarProps {
 export function Sidebar({ children }: SidebarProps) {
   const [mounted, setMounted] = React.useState(false)
   const pathname = usePathname()
+  const router = useRouter()
 
   React.useEffect(() => {
     setMounted(true)
@@ -129,8 +131,28 @@ export function Sidebar({ children }: SidebarProps) {
     )
   }
 
-  const isActive = (url: string) => {
+  const isActive = (url: string, items?: { url: string }[]) => {
+    if (items) {
+      // For parent items (Companies/Accounts)
+      const parentPath = `/${url.toLowerCase()}`
+      return pathname === parentPath
+    }
+    
+    // For regular menu items and sub-items
     return pathname === url
+  }
+
+  // Add new function to handle minimized sidebar clicks
+  const handleMinimizedClick = (e: React.MouseEvent, item: any) => {
+    const sidebarElement = document.querySelector('[data-collapsible="icon"]')
+    const isMinimized = sidebarElement !== null
+    
+    if (isMinimized && item.items) {
+      e.preventDefault()
+      e.stopPropagation()
+      router.push(`/${item.title.toLowerCase()}`)
+      return false
+    }
   }
 
   return (
@@ -162,21 +184,34 @@ export function Sidebar({ children }: SidebarProps) {
                       className="group/collapsible"
                     >
                       <SidebarMenuItem key={`menu-${index}`}>
-                        <CollapsibleTrigger asChild>
-                          {item.url ? (
-                            <Link href={item.url}>
-                              <SidebarMenuButton 
-                                tooltip={item.title}
-                                className={isActive(item.url) ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}
-                              >
-                                {item.icon && React.createElement(item.icon, { className: "h-4 w-4 shrink-0" })}
-                                <span className="overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
-                                  {item.title}
-                                </span>
-                              </SidebarMenuButton>
-                            </Link>
-                          ) : (
-                            <SidebarMenuButton tooltip={item.title}>
+                        {item.url ? (
+                          <Link href={item.url}>
+                            <SidebarMenuButton 
+                              tooltip={item.title}
+                              className={isActive(item.url) ? "bg-accent text-accent-foreground" : ""}
+                            >
+                              {item.icon && React.createElement(item.icon, { className: "h-4 w-4 shrink-0" })}
+                              <span className="overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
+                                {item.title}
+                              </span>
+                            </SidebarMenuButton>
+                          </Link>
+                        ) : (
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuButton 
+                              tooltip={item.title}
+                              className={isActive(item.title, item.items) ? "bg-accent text-accent-foreground" : ""}
+                              onClick={(e) => {
+                                const sidebarElement = document.querySelector('[data-collapsible="icon"]')
+                                const isMinimized = sidebarElement !== null
+                                
+                                if (isMinimized && item.items) {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  router.push(`/${item.title.toLowerCase()}`)
+                                }
+                              }}
+                            >
                               {item.icon && React.createElement(item.icon, { className: "h-4 w-4 shrink-0" })}
                               <span className="overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
                                 {item.title}
@@ -185,8 +220,8 @@ export function Sidebar({ children }: SidebarProps) {
                                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 shrink-0" />
                               )}
                             </SidebarMenuButton>
-                          )}
-                        </CollapsibleTrigger>
+                          </CollapsibleTrigger>
+                        )}
                         {item.items && (
                           <CollapsibleContent>
                             <SidebarMenuSub>
@@ -194,7 +229,10 @@ export function Sidebar({ children }: SidebarProps) {
                                 <SidebarMenuSubItem key={`sub-${index}-${subIndex}`}>
                                   <SidebarMenuSubButton asChild>
                                     <Link href={subItem.url}>
-                                      <span className={`overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0 ${isActive(subItem.url) ? "text-primary" : ""}`}>
+                                      <span className={cn(
+                                        "overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0",
+                                        pathname === subItem.url && "text-primary font-medium"
+                                      )}>
                                         {subItem.title}
                                       </span>
                                     </Link>
@@ -218,7 +256,7 @@ export function Sidebar({ children }: SidebarProps) {
                     <DropdownMenuTrigger asChild>
                       <SidebarMenuButton
                         size="lg"
-                        className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                        className="data-[state=open]:bg-accent data-[state=open]:text-primary"
                       >
                         <Avatar className="h-8 w-8 rounded-lg shrink-0">
                           <AvatarImage
