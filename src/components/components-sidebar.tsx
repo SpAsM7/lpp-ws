@@ -58,6 +58,8 @@ import {
 } from "./ui/sidebar"
 import { Separator } from "./ui/separator"
 import { cn } from "../lib/utils"
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 // Dynamically import icons to prevent SSR issues
 const DynamicHome = dynamic(() => import("lucide-react").then(mod => mod.Home), { ssr: false })
@@ -275,6 +277,9 @@ export function Sidebar({ children }: SidebarProps) {
                       align="end"
                       sideOffset={4}
                     >
+                      <VisuallyHidden>
+                        <DialogTitle>User Menu</DialogTitle>
+                      </VisuallyHidden>
                       <DropdownMenuLabel className="p-0 font-normal">
                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                           <Avatar className="h-8 w-8 rounded-lg">
