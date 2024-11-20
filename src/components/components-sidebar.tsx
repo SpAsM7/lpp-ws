@@ -139,7 +139,7 @@ export function Sidebar({ children }: SidebarProps) {
       const parentPath = `/${url.toLowerCase()}`
       return pathname === parentPath
     }
-    
+
     // For regular menu items and sub-items
     return pathname === url
   }
@@ -156,8 +156,20 @@ export function Sidebar({ children }: SidebarProps) {
             <SidebarHeader>
               <SidebarMenu>
                 <SidebarMenuItem key="logo">
-                  <SidebarMenuButton size="lg">
-                    <div className="flex items-center gap-2">
+                  <SidebarMenuButton
+                    size="lg"
+                    className={cn(
+                      "flex items-center",
+                      "group-data-[collapsible=icon]:justify-center"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex items-center",
+                        "gap-2",
+                        "group-data-[collapsible=icon]:gap-0"
+                      )}
+                    >
                       <GalleryVerticalEnd className="size-5" />
                       <span className="font-semibold overflow-hidden transition-[width] duration-200 ease-linear group-data-[collapsible=icon]:w-0">
                         LP Portal
@@ -181,7 +193,7 @@ export function Sidebar({ children }: SidebarProps) {
                       <SidebarMenuItem key={`menu-${index}`}>
                         {item.url ? (
                           <Link href={item.url}>
-                            <SidebarMenuButton 
+                            <SidebarMenuButton
                               tooltip={item.title}
                               className={isActive(item.url) ? "bg-accent text-accent-foreground" : ""}
                             >
@@ -193,7 +205,7 @@ export function Sidebar({ children }: SidebarProps) {
                           </Link>
                         ) : (
                           <CollapsibleTrigger asChild>
-                            <SidebarMenuButton 
+                            <SidebarMenuButton
                               tooltip={item.title}
                               className={isActive(item.title, item.items) ? "bg-accent text-accent-foreground" : ""}
                               onClick={(e) => {
@@ -219,15 +231,17 @@ export function Sidebar({ children }: SidebarProps) {
                             <SidebarMenuSub>
                               {item.items.map((subItem, subIndex) => (
                                 <SidebarMenuSubItem key={`sub-${index}-${subIndex}`}>
-                                  <SidebarMenuSubButton 
+                                  <SidebarMenuSubButton
                                     asChild
                                     className={pathname === subItem.url ? "bg-accent" : ""}
                                   >
                                     <Link href={subItem.url}>
-                                      <span className={cn(
-                                        "overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0",
-                                        pathname === subItem.url && "text-accent-foreground font-medium"
-                                      )}>
+                                      <span
+                                        className={cn(
+                                          "overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0",
+                                          pathname === subItem.url && "text-accent-foreground font-medium"
+                                        )}
+                                      >
                                         {subItem.title}
                                       </span>
                                     </Link>
