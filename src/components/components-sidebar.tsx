@@ -58,7 +58,7 @@ import {
 } from "./ui/sidebar"
 import { Separator } from "./ui/separator"
 import { cn } from "../lib/utils"
-import { Dialog, DialogContent, DialogTitle } from "./ui/dialog"
+import { Dialog, DialogContent } from "./ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 // Dynamically import icons to prevent SSR issues
@@ -280,7 +280,7 @@ export function Sidebar({ children }: SidebarProps) {
                       sideOffset={4}
                     >
                       <VisuallyHidden>
-                        <DialogTitle>User Menu</DialogTitle>
+                        <span role="heading" aria-level={1}>User Menu</span>
                       </VisuallyHidden>
                       <DropdownMenuLabel className="p-0 font-normal">
                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
