@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AuthHeader } from "@/components/auth/auth-header";
 
 export default async function AuthLayout({
   children,
@@ -20,6 +21,7 @@ export default async function AuthLayout({
 
   return (
     <div className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+      <AuthHeader />
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="relative z-20 flex items-center text-lg font-medium">
@@ -35,7 +37,7 @@ export default async function AuthLayout({
           >
             <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
           </svg>
-          Emberline
+          Emberline Portal
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">

@@ -11,38 +11,41 @@ import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/ui/icons";
-import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function LoginForm({ className, ...props }: UserAuthFormProps) {
+export function SignUpForm({ className, ...props }: UserAuthFormProps) {
   const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignUpInput>({
+    resolver: zodResolver(signUpSchema),
   });
 
-  const onSubmit = async (data: LoginInput) => {
+  const onSubmit = async (data: SignUpInput) => {
     const supabase = createClient();
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
-    if (signInError) {
+    if (signUpError) {
       setError("root", { 
-        message: signInError.message 
+        message: signUpError.message 
       });
       return;
     }
 
-    router.push("/home");
-    router.refresh();
+    // Show success message or redirect
+    router.push("/login?message=Check your email to continue sign in process");
   };
 
   return (
@@ -69,18 +72,11 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
             )}
           </div>
           <div className="grid gap-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link
-                href="/reset-password"
-                className="text-sm text-muted-foreground hover:text-primary"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
+              placeholder="••••••••"
               disabled={isSubmitting}
               {...register("password")}
               className={errors.password ? "border-red-500" : ""}
@@ -93,17 +89,17 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
             {isSubmitting && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Sign In with Email
+            Sign up with Email
           </Button>
         </div>
       </form>
       <p className="px-8 text-center text-sm text-muted-foreground">
-        Don't have an account?{" "}
+        Already have an account?{" "}
         <Link
-          href="/signup"
+          href="/login"
           className="underline underline-offset-4 hover:text-primary"
         >
-          Sign up
+          Sign in
         </Link>
       </p>
     </div>

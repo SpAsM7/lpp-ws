@@ -252,3 +252,40 @@
    - Never trust client-side data
    - Log security-relevant actions
    - Regular security review of new features
+
+## Pending Features
+
+### Authentication Enhancements
+- [ ] Implement Google OAuth sign-in
+  - Configure Google OAuth in Supabase
+  - Add Google sign-in button to login/signup forms
+  - Test OAuth flow and redirects
+  - Handle OAuth errors and edge cases
+
+### User Profile & Settings
+- [ ] Create user profile management
+  - Profile editing
+  - Avatar upload
+  - Email preferences
+  - Notification settings
+
+### Email Features
+- [ ] Set up email templates
+  - Welcome email
+  - Password reset email
+  - Email verification
+  - Custom branding for emails
+
+### Security Features
+- [ ] Implement rate limiting for auth endpoints
+- [ ] Add two-factor authentication
+- [ ] Set up session management
+  - Session timeout
+  - Concurrent session handling
+  - Device tracking
+
+### Testing & QA
+- [ ] Write E2E tests for auth flows
+- [ ] Test email delivery and templates
+- [ ] Cross-browser testing
+- [ ] Mobile responsive testing
