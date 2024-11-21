@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import dynamic from "next/dynamic"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 import { usePathname, useRouter } from "next/navigation"
 import {
   ChevronRight,
@@ -57,16 +57,9 @@ import {
   SidebarTrigger,
 } from "./ui/sidebar"
 import { Separator } from "./ui/separator"
-import { cn } from "../lib/utils"
+import { cn } from "@/lib/utils"
 import { Dialog, DialogContent } from "./ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-
-// Dynamically import icons to prevent SSR issues
-const DynamicHome = dynamic(() => import("lucide-react").then(mod => mod.Home), { ssr: false })
-const DynamicBuilding = dynamic(() => import("lucide-react").then(mod => mod.Building), { ssr: false })
-const DynamicPieChart = dynamic(() => import("lucide-react").then(mod => mod.PieChart), { ssr: false })
-const DynamicWallet = dynamic(() => import("lucide-react").then(mod => mod.Wallet), { ssr: false })
-const DynamicFileText = dynamic(() => import("lucide-react").then(mod => mod.FileText), { ssr: false })
 
 const data = {
   user: {
@@ -78,11 +71,11 @@ const data = {
     {
       title: "Home",
       url: "/home",
-      icon: DynamicHome,
+      icon: Home,
     },
     {
       title: "Companies",
-      icon: DynamicBuilding,
+      icon: Building,
       items: [
         { title: "Company 1", url: "/companies/company-1" },
         { title: "Company 2", url: "/companies/company-2" },
@@ -91,11 +84,11 @@ const data = {
     {
       title: "Investments",
       url: "/investments",
-      icon: DynamicPieChart,
+      icon: PieChart,
     },
     {
       title: "Accounts",
-      icon: DynamicWallet,
+      icon: Wallet,
       items: [
         { title: "Account 1", url: "/accounts/account-1" },
         { title: "Account 2", url: "/accounts/account-2" },
@@ -104,7 +97,7 @@ const data = {
     {
       title: "Documents",
       url: "/documents",
-      icon: DynamicFileText,
+      icon: FileText,
     },
   ],
 }
@@ -117,15 +110,25 @@ export function Sidebar({ children }: SidebarProps) {
   const [mounted, setMounted] = React.useState(false)
   const pathname = usePathname()
   const router = useRouter()
+  const supabase = createClient()
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('Error logging out:', error)
+    }
+  }
+
   // Return a placeholder with similar dimensions during SSR
   if (!mounted) {
     return (
-      <div className="w-full h-screen bg-background" suppressHydrationWarning>
+      <div className="w-full h-screen bg-background">
         <div className="flex h-full flex-col overflow-hidden">
           {/* Placeholder content */}
         </div>
@@ -197,7 +200,7 @@ export function Sidebar({ children }: SidebarProps) {
                               tooltip={item.title}
                               className={isActive(item.url) ? "bg-accent text-accent-foreground" : ""}
                             >
-                              {item.icon && React.createElement(item.icon, { className: "h-4 w-4 shrink-0" })}
+                              {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
                               <span className="overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
                                 {item.title}
                               </span>
@@ -216,7 +219,7 @@ export function Sidebar({ children }: SidebarProps) {
                                 }
                               }}
                             >
-                              {item.icon && React.createElement(item.icon, { className: "h-4 w-4 shrink-0" })}
+                              {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
                               <span className="overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
                                 {item.title}
                               </span>
@@ -329,7 +332,7 @@ export function Sidebar({ children }: SidebarProps) {
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         Log out
                       </DropdownMenuItem>
@@ -351,15 +354,12 @@ export function Sidebar({ children }: SidebarProps) {
           </header>
           <div className="p-4">
             {children}
-            <div className="grid auto-rows-min gap-4 md:grid-cols-3 mt-4">
-              <div className="aspect-video rounded-xl bg-muted/50" />
-              <div className="aspect-video rounded-xl bg-muted/50" />
-              <div className="aspect-video rounded-xl bg-muted/50" />
-            </div>
-            <div className="mt-4 min-h-[200px] rounded-xl bg-muted/50" />
           </div>
         </SidebarInset>
       </SidebarProvider>
     </div>
   )
 }
+
+// Export as default for dynamic import
+export default Sidebar

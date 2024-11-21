@@ -21,9 +21,9 @@
   - [x] Environment variables are set up and working
 
 ### 1.3 Core Layout Components
-- [ ] Create basic application layout
-- [ ] Implement navigation structure
-- [ ] Set up routing
+- [x] Create basic application layout
+- [x] Implement navigation structure
+- [x] Set up routing
 - **Success Criteria**: 
   - Page shows company name in header
   - Sidebar navigation menu appears and can be clicked
@@ -224,6 +224,22 @@
    - Use TypeScript types consistently
    - Follow established project structure
    - Comment complex business logic
+   - Handle Next.js 15+ request-specific APIs correctly:
+     - Always use async/await with cookies(), headers(), params, searchParams
+     - Example:
+       ```typescript
+       // ❌ Old way (pre-Next.js 15)
+       function Page() {
+         const headersList = headers()
+         return <div>{/* ... */}</div>
+       }
+
+       // ✅ New way (Next.js 15+)
+       async function Page() {
+         const headersList = await headers()
+         return <div>{/* ... */}</div>
+       }
+       ```
 
 7. **User Experience**
    - Show clear feedback for all user actions
