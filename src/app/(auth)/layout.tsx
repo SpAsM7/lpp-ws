@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AuthHeader } from "@/components/auth/auth-header";
+import { AuthAnimation } from "@/components/auth/auth-animation";
 
 export default async function AuthLayout({
   children,
@@ -24,6 +25,9 @@ export default async function AuthLayout({
       <AuthHeader />
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
         <div className="absolute inset-0 bg-zinc-900" />
+        <div className="absolute inset-0 overflow-hidden">
+          <AuthAnimation />
+        </div>
         <div className="relative z-20 flex items-center text-lg font-medium">
           <svg
             xmlns="http://www.w3.org/2000/svg"
