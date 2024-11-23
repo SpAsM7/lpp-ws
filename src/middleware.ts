@@ -1,5 +1,5 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
   // Get the pathname from the URL
   const path = request.nextUrl.pathname
@@ -61,6 +63,11 @@ export async function middleware(request: NextRequest) {
   const isProtectedPath = protectedPaths.includes(path) || 
                          path.startsWith('/companies/') || 
                          path.startsWith('/accounts/')
+
+  // Always allow access to callback paths
+  if (path === '/auth/callback' || path.startsWith('/api/auth/callback')) {
+    return response
+  }
 
   // If logged in and trying to access auth pages, redirect to home
   if (session && isAuthPath) {

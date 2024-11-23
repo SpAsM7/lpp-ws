@@ -60,6 +60,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
               id="email"
               type="email"
               placeholder="name@company.com"
+              autoComplete="email"
               disabled={isSubmitting}
               {...register("email")}
               className={errors.email ? "border-red-500" : ""}
@@ -81,6 +82,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
             <Input
               id="password"
               type="password"
+              autoComplete="current-password"
               disabled={isSubmitting}
               {...register("password")}
               className={errors.password ? "border-red-500" : ""}

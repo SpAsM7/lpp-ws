@@ -1,27 +1,41 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { AuthHeader } from "@/components/auth/auth-header";
-import { AuthAnimation } from "@/components/auth/auth-animation";
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { AuthHeader } from "@/components/auth/auth-header"
+import { AuthAnimation } from "@/components/auth/auth-animation"
 
 export default async function AuthLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const headersList = await headers();
-  const supabase = await createClient();
+  const headersList = await headers()
+  const supabase = await createClient()
 
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession()
 
-  if (session) {
-    redirect("/home");
+  // Get the current path
+  const pathname = headersList.get("x-invoke-path") || ""
+  const isCallback = pathname.endsWith("/callback")
+
+  // For callback route, render children directly without layout
+  if (isCallback) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        {children}
+      </div>
+    )
+  }
+
+  // Only redirect if not in callback route
+  if (session && !isCallback) {
+    redirect("/home")
   }
 
   return (
-    <div className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+    <div className="grid min-h-screen lg:grid-cols-2">
       <AuthHeader />
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
         <div className="absolute inset-0 bg-zinc-900" />
@@ -52,11 +66,11 @@ export default async function AuthLayout({
           </blockquote>
         </div>
       </div>
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+      <div className="flex items-center justify-center">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] px-8">
           {children}
         </div>
       </div>
     </div>
-  );
+  )
 }

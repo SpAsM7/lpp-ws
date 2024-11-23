@@ -270,11 +270,14 @@
   - Notification settings
 
 ### Email Features
-- [ ] Set up email templates
-  - Welcome email
-  - Password reset email
-  - Email verification
-  - Custom branding for emails
+- [ ] Finish setting up email templates
+  - [ ] Welcome email sequence
+  - [ ] Invite user email
+  - [ ] Double check all other email possiblities
+  - [x] Password reset email
+  - [x] Email verification
+  - [x] Custom branding for emails
+  - [ ] Investigate email delivery issues (tests are going to spam)
 
 ### Security Features
 - [ ] Implement rate limiting for auth endpoints

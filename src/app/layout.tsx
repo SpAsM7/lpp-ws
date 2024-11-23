@@ -1,19 +1,18 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Inter } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Emberline Portal",
-  description: "Manage your investments and documents",
-};
+  description: "Manage your investments and stay up to date with your portfolio.",
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -24,11 +23,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen" suppressHydrationWarning>
-            {children}
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

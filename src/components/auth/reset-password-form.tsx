@@ -27,7 +27,7 @@ export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
     const supabase = createClient();
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`,
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/update-password`,
     });
 
     if (resetError) {
