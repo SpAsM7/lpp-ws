@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/ui/icons";
 import { 
@@ -164,10 +164,25 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
               <div className="grid gap-6">
                 {magicLinkErrors.root?.message && (
                   <Alert 
-                    variant={magicLinkErrors.root.message.includes("Check your email") ? "default" : "destructive"} 
-                    className="mb-4"
+                    variant={magicLinkErrors.root.message.includes("Check your email") ? "success" : "destructive"} 
+                    className="mb-4 flex items-center"
                   >
-                    {magicLinkErrors.root.message}
+                    {magicLinkErrors.root.message.includes("Check your email") && (
+                      <svg
+                        className="h-4 w-4 mr-2 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                    <span>{magicLinkErrors.root.message}</span>
                   </Alert>
                 )}
                 <div className="grid gap-2">

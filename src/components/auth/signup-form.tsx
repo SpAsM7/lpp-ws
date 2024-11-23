@@ -44,17 +44,37 @@ export function SignUpForm({ className, ...props }: UserAuthFormProps) {
       return;
     }
 
-    // Show success message or redirect
-    router.push("/login?message=Check your email to continue sign in process");
+    // Show success message
+    setError("root", {
+      message: "Check your email to confirm your account"
+    });
   };
 
   return (
     <div className={cn("grid gap-8", className)} {...props}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="grid gap-6">
-          {errors.root && (
-            <Alert variant="destructive" className="mb-4">
-              {errors.root.message}
+          {errors.root?.message && (
+            <Alert 
+              variant={errors.root.message.includes("Check your email") ? "success" : "destructive"} 
+              className="mb-4 flex items-center"
+            >
+              {errors.root.message.includes("Check your email") && (
+                <svg
+                  className="h-4 w-4 mr-2 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+              <span>{errors.root.message}</span>
             </Alert>
           )}
           <div className="grid gap-2">
