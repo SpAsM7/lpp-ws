@@ -1,10 +1,9 @@
 import { SignUpForm } from "@/components/auth/signup-form";
-import Link from "next/link";
 
 export default function SignUpPage() {
   return (
     <>
-      <div className="flex flex-col space-y-2 text-center">
+      <div className="flex flex-col space-y-4 text-center mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">
           Create an account
         </h1>
@@ -13,23 +12,6 @@ export default function SignUpPage() {
         </p>
       </div>
       <SignUpForm />
-      <p className="px-8 text-center text-sm text-muted-foreground">
-        By clicking continue, you agree to our{" "}
-        <Link
-          href="/terms"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link
-          href="/privacy"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Privacy Policy
-        </Link>
-        .
-      </p>
     </>
   );
 }

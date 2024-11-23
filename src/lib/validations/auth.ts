@@ -8,6 +8,12 @@ export const loginSchema = z.object({
     .min(1, "Password is required"),
 })
 
+export const magicLinkSchema = z.object({
+  email: z.string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+})
+
 export const signUpSchema = z.object({
   email: z.string()
     .min(1, "Email is required")
@@ -19,4 +25,5 @@ export const signUpSchema = z.object({
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
+export type MagicLinkInput = z.infer<typeof magicLinkSchema>
 export type SignUpInput = z.infer<typeof signUpSchema>

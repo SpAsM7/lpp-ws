@@ -5,12 +5,16 @@ import {
   LucideProps,
   Moon,
   SunMedium,
+  Mail,
+  Key,
 } from "lucide-react"
 
 export const Icons = {
   sun: SunMedium,
   moon: Moon,
   spinner: Loader2,
+  mail: Mail,
+  key: Key,
   google: (props: LucideProps) => (
     <svg role="img" viewBox="0 0 24 24" {...props}>
       <path

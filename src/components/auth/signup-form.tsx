@@ -49,9 +49,9 @@ export function SignUpForm({ className, ...props }: UserAuthFormProps) {
   };
 
   return (
-    <div className={cn("grid gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-4">
+    <div className={cn("grid gap-8", className)} {...props}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="grid gap-6">
           {errors.root && (
             <Alert variant="destructive" className="mb-4">
               {errors.root.message}
@@ -59,28 +59,42 @@ export function SignUpForm({ className, ...props }: UserAuthFormProps) {
           )}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@company.com"
-              disabled={isSubmitting}
-              {...register("email")}
-              className={errors.email ? "border-red-500" : ""}
-            />
+            <div className="relative">
+              <Icons.mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@company.com"
+                autoComplete="email"
+                disabled={isSubmitting}
+                {...register("email")}
+                className={cn(
+                  "pl-10",
+                  errors.email ? "border-red-500" : ""
+                )}
+              />
+            </div>
             {errors.email && (
               <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              disabled={isSubmitting}
-              {...register("password")}
-              className={errors.password ? "border-red-500" : ""}
-            />
+            <div className="relative">
+              <Icons.key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="new-password"
+                disabled={isSubmitting}
+                {...register("password")}
+                className={cn(
+                  "pl-10",
+                  errors.password ? "border-red-500" : ""
+                )}
+              />
+            </div>
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
@@ -89,19 +103,21 @@ export function SignUpForm({ className, ...props }: UserAuthFormProps) {
             {isSubmitting && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Sign up with Email
+            Sign up
           </Button>
         </div>
       </form>
-      <p className="px-8 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link
-          href="/login"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Sign in
+      <div className="text-center text-sm text-muted-foreground">
+        By clicking continue, you agree to our{" "}
+        <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
+          Privacy Policy
         </Link>
-      </p>
+        .
+      </div>
     </div>
   );
 }

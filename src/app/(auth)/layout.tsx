@@ -67,7 +67,7 @@ export default async function AuthLayout({
         </div>
       </div>
       <div className="flex items-center justify-center">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] px-8">
+        <div className="w-full max-w-[350px] flex flex-col justify-center px-8">
           {children}
         </div>
       </div>
