@@ -8,7 +8,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
-} from './ui/breadcrumb';
+} from '@/components/ui/breadcrumb';
 import { ChevronRight } from 'lucide-react';
 
 const formatSegment = (segment: string): string => {
