@@ -1,28 +1,46 @@
 # Absolute Code Rules
 
+## Project Structure
+1. All shared code MUST go in `/src/lib`
+2. All shared types MUST go in `/src/types`
+3. All environment variables MUST be defined in `.env.example`
+4. Always use absolute imports from `@/` not relative paths
+5. Never put business logic in components
+
 ## Route Structure
 1. API routes MUST go in `/app/api/**/route.ts`
-2. API routes are NEVER affected by route groups like `(auth)`
+2. API routes are NEVER affected by route groups
 3. Pages MUST go in their corresponding URL path folder as `page.tsx`
-4. Never mix API routes and pages in the same folder structure
-5. All request-specific APIs (cookies, headers, params, searchParams) MUST be async
+4. Route groups (in parentheses) are only for organizing pages
+5. Route groups MUST NOT contain API routes
+6. Route groups DO NOT affect the URL structure
+7. All request-specific APIs (cookies, headers, params, searchParams) MUST be async
+8. Layout.tsx MUST be used for shared UI within route groups
+9. Always use App Router (`/app` directory) - never use Pages Router (`/pages` directory)
+
+## Loading States
+1. Always wrap client components in Suspense boundaries
+2. Never show raw loading spinners - use shadcn skeleton components
+3. Use route-specific loading.tsx for page-level loading states
+4. Component-specific loading states should be co-located with their components
+5. Reusable loading components MUST go in `/src/components/loading`
 
 ## Authentication
 1. Auth endpoints MUST follow these exact patterns:
-   API Routes:
-   - `/app/api/auth/signin/route.ts` - Sign in handlers (email, OAuth)
-   - `/app/api/auth/signup/route.ts` - Sign up handlers
-   - `/app/api/auth/signout/route.ts` - Sign out handler
-   - `/app/api/auth/callback/route.ts` - OAuth/magic link callbacks
-   - `/app/api/auth/reset/route.ts` - Password reset
-   - `/app/api/auth/verify/route.ts` - Email verification
-   Page Components:
-   - `/app/auth/signin/page.tsx` - Sign in forms
-   - `/app/auth/signup/page.tsx` - Sign up forms
-   - `/app/auth/callback/page.tsx` - Auth callback handling
-   - `/app/auth/reset/page.tsx` - Password reset forms
-   - `/app/auth/verify/page.tsx` - Email verification
-2. Always use Supabase SSR client methods:
+   API Routes (under `/app/api/auth/`):
+   - `login/route.ts` - Sign in handlers (email, OAuth)
+   - `signup/route.ts` - Sign up handlers
+   - `signout/route.ts` - Sign out handler
+   - `callback/route.ts` - OAuth/magic link callbacks
+   - `reset-password/route.ts` - Password reset
+   - `verify/route.ts` - Email verification
+   Page Components (under `/app/(auth)/`):
+   - `login/page.tsx` - Sign in forms
+   - `signup/page.tsx` - Sign up forms
+   - `callback/page.tsx` - Auth callback handling
+   - `reset-password/page.tsx` - Password reset forms
+   - `verify/page.tsx` - Email verification
+2. Always use Supabase SSR client methods from `@/lib/supabase`:
    - Client Components: Use `createClient()` from `@/lib/supabase/client`
    - Server Components: Use `createClient()` from `@/lib/supabase/server`
    - Middleware: Use `createServerClient()` from `@supabase/ssr`
@@ -41,6 +59,8 @@
 3. Never fetch data in client components unless absolutely necessary
 4. Always use database functions for data operations - never raw SQL
 5. Always implement preload pattern to prevent waterfalls
+6. Use Server Actions for form submissions and data mutations
+7. Use pagination for large data sets
 
 ## Middleware
 1. Middleware MUST be in project root as `middleware.ts`
@@ -55,20 +75,31 @@
 5. Use function keyword for components, not const
 6. Always use TypeScript interfaces over types
 7. Place static content and interfaces at end of file
+8. Never use classes - use functional components
+9. Always use next/image for images - never raw <img> tags
+10. Always use next/font for fonts - never import font files directly
 
 ## Database
-1. Always use BIGINT for currency (amounts in cents)
+1. Always use BIGINT for currency:
+   - Store amounts in dollars (never cents/decimals)
+   - For large values, display in thousands/millions format (e.g., $10M, $500K)
+   - Never use floating point or decimal types for currency
+   - Display values must use proper formatting based on size
 2. Always use UUID for IDs
 3. Never skip audit fields (created_at, updated_at, etc.)
 4. Always implement row-level security (RLS)
-5. Never store sensitive data in JSONB fields
+5. Never store sensitive data in JSONB fields:
+   - Use JSONB only for preferences, metadata, and configuration
+   - Never store PII, financial data, or auth data in JSONB
+   - Always validate JSONB data structure with zod
 
 ## Forms
 1. Always use react-hook-form with zod validation
 2. Never use uncontrolled form inputs
 3. Always handle loading and error states
 4. Form components must be client components ('use client')
-5. Use useActionState with react-hook-form
+5. Always use Server Actions with react-hook-form for form submissions
+6. Handle form state through formState from react-hook-form
 
 ## Error Handling
 1. Always use error boundaries at page level
@@ -77,6 +108,7 @@
 4. Never catch errors without handling them
 5. Handle errors at start of functions with early returns
 6. Model expected errors as return values
+7. Always provide user-friendly error messages with next steps
 
 ## Dependencies/Packages
 1. Always use @supabase/ssr for Supabase integration - never use legacy packages
@@ -89,8 +121,7 @@
 
 ## Code Style
 1. Use lowercase with dashes for directories (e.g., components/auth-wizard)
-2. Never use classes - use functional components
-3. Always use named exports for components
-4. Files must follow order: exports, subcomponents, helpers, static content, types
-5. Omit curly braces for single-line conditional statements
-6. Use descriptive variable names with auxiliary verbs (isLoading, hasError)
+2. Always use named exports for components
+3. Files must follow order: exports, subcomponents, helpers, static content, types
+4. Omit curly braces for single-line conditional statements
+5. Use descriptive variable names with auxiliary verbs (isLoading, hasError)
