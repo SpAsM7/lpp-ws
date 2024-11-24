@@ -10,10 +10,16 @@
 ## Route Structure
 1. API routes MUST go in `/app/api/**/route.ts`
 2. API routes are NEVER affected by route groups
-3. Pages MUST go in their corresponding URL path folder as `page.tsx`
-4. Route groups (in parentheses) are only for organizing pages
-5. Route groups MUST NOT contain API routes
-6. Route groups DO NOT affect the URL structure
+3. Pages MUST go in folder matching their URL path:
+   - URL `/auth/login` → `/app/auth/login/page.tsx`
+   - URL `/dashboard` → `/app/dashboard/page.tsx`
+4. Route groups are ONLY for organizing pages with different URL paths:
+   - URL `/dashboard` in auth group → `/app/(auth)/dashboard/page.tsx`
+   - URL `/settings` in auth group → `/app/(auth)/settings/page.tsx`
+5. Never use route groups for pages where URL matches folder structure:
+   - NO: `/app/(auth)/auth/login/page.tsx` for `/auth/login`
+   - YES: `/app/auth/login/page.tsx` for `/auth/login`
+6. Route groups MUST NOT contain API routes
 7. All request-specific APIs (cookies, headers, params, searchParams) MUST be async
 8. Layout.tsx MUST be used for shared UI within route groups
 9. Always use App Router (`/app` directory) - never use Pages Router (`/pages` directory)
@@ -33,13 +39,15 @@
    - `signout/route.ts` - Sign out handler
    - `callback/route.ts` - OAuth/magic link callbacks
    - `reset-password/route.ts` - Password reset
+   - `update-password/route.ts` - Password update after reset
    - `verify/route.ts` - Email verification
-   Page Components (under `/app/(auth)/`):
-   - `login/page.tsx` - Sign in forms
-   - `signup/page.tsx` - Sign up forms
-   - `callback/page.tsx` - Auth callback handling
-   - `reset-password/page.tsx` - Password reset forms
-   - `verify/page.tsx` - Email verification
+   Page Components (under `/app/auth/`):
+   - `login/page.tsx` - Sign in forms (URL: /auth/login)
+   - `signup/page.tsx` - Sign up forms (URL: /auth/signup)
+   - `callback/page.tsx` - Auth callback handling (URL: /auth/callback)
+   - `reset-password/page.tsx` - Password reset forms (URL: /auth/reset-password)
+   - `update-password/page.tsx` - Password update forms (URL: /auth/update-password)
+   - `verify/page.tsx` - Email verification (URL: /auth/verify)
 2. Always use Supabase SSR client methods from `@/lib/supabase`:
    - Client Components: Use `createClient()` from `@/lib/supabase/client`
    - Server Components: Use `createClient()` from `@/lib/supabase/server`

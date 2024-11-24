@@ -1,12 +1,13 @@
-import { cookies } from "next/headers"
+import { createRouteHandlerClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
   console.log("API route hit: /api/auth/callback")
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
+  const type = requestUrl.searchParams.get("type")
   console.log("Received code:", code?.slice(0, 10) + "...")
+  console.log("Type:", type)
 
   if (!code) {
     console.log("No code provided")
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
 
   try {
     console.log("Creating Supabase client")
-    const supabase = await createClient()
+    const supabase = await createRouteHandlerClient()
     console.log("Exchanging code for session")
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     console.log("Exchange result:", error ? "Error" : "Success", error?.message || "")
@@ -29,6 +30,15 @@ export async function GET(request: Request) {
         { error: "Authentication failed" },
         { status: 401 }
       )
+    }
+
+    // For password reset flow, return success with type
+    if (type === "recovery") {
+      console.log("Recovery flow detected")
+      return NextResponse.json({ 
+        success: true,
+        type: "recovery"
+      })
     }
 
     console.log("Session created successfully")

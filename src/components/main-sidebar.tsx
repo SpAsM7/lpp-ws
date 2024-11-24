@@ -119,7 +119,7 @@ export function Sidebar({ children }: SidebarProps) {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
-      router.push('/login')
+      router.push('/auth/login')
     } catch (error) {
       console.error('Error logging out:', error)
     }

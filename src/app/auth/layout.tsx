@@ -36,7 +36,6 @@ export default async function AuthLayout({
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <AuthHeader />
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
         <div className="absolute inset-0 bg-zinc-900" />
         <div className="absolute inset-0 overflow-hidden">
@@ -68,6 +67,7 @@ export default async function AuthLayout({
       </div>
       <div className="flex items-center justify-center">
         <div className="w-full max-w-[350px] flex flex-col justify-center px-8">
+          <AuthHeader />
           {children}
         </div>
       </div>

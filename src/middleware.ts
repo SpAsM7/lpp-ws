@@ -52,20 +52,29 @@ export async function middleware(request: NextRequest) {
 
   // Handle root path
   if (path === '/') {
-    const redirectUrl = session ? '/home' : '/login'
+    const redirectUrl = session ? '/home' : '/auth/login'
     return NextResponse.redirect(new URL(redirectUrl, request.url))
   }
 
   // Define auth and protected paths
-  const authPaths = ['/login', '/reset-password', '/update-password']
+  const authPaths = [
+    '/auth/login',
+    '/auth/signup',
+    '/auth/reset-password',
+    '/auth/verify'
+  ]
   const protectedPaths = ['/home', '/companies', '/investments', '/accounts', '/documents']
   const isAuthPath = authPaths.includes(path)
   const isProtectedPath = protectedPaths.includes(path) || 
                          path.startsWith('/companies/') || 
                          path.startsWith('/accounts/')
 
-  // Always allow access to callback paths
-  if (path === '/auth/callback' || path.startsWith('/api/auth/callback')) {
+  // Always allow access to callback and update password paths
+  if (
+    path === '/auth/callback' || 
+    path.startsWith('/api/auth/callback') ||
+    path === '/auth/update-password'
+  ) {
     return response
   }
 
@@ -76,7 +85,7 @@ export async function middleware(request: NextRequest) {
 
   // If not logged in and trying to access protected pages, redirect to login
   if (!session && isProtectedPath) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   return response

@@ -1,28 +1,28 @@
 "use client"
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { Icons } from "@/components/ui/icons";
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert } from "@/components/ui/alert"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
+import { Icons } from "@/components/ui/icons"
 import { 
   loginSchema, 
   magicLinkSchema, 
   type LoginInput, 
   type MagicLinkInput 
-} from "@/lib/validations/auth";
+} from "@/lib/validations/auth"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function LoginForm({ className, ...props }: UserAuthFormProps) {
-  const router = useRouter();
+  const router = useRouter()
   const {
     register: registerPassword,
     handleSubmit: handlePasswordSubmit,
@@ -30,7 +30,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
     setError: setPasswordError,
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-  });
+  })
 
   const {
     register: registerMagicLink,
@@ -39,49 +39,49 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
     setError: setMagicLinkError,
   } = useForm<MagicLinkInput>({
     resolver: zodResolver(magicLinkSchema),
-  });
+  })
 
   const onPasswordSubmit = async (data: LoginInput) => {
-    const supabase = createClient();
+    const supabase = createClient()
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
-    });
+    })
 
     if (signInError) {
       setPasswordError("root", { 
         message: signInError.message 
-      });
-      return;
+      })
+      return
     }
 
-    router.push("/home");
-    router.refresh();
-  };
+    router.push("/home")
+    router.refresh()
+  }
 
   const onMagicLinkSubmit = async (data: MagicLinkInput) => {
-    const supabase = createClient();
+    const supabase = createClient()
 
     const { error: magicLinkError } = await supabase.auth.signInWithOtp({
       email: data.email,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
-    });
+    })
 
     if (magicLinkError) {
       setMagicLinkError("root", {
         message: magicLinkError.message
-      });
-      return;
+      })
+      return
     }
 
     // Show success message
     setMagicLinkError("root", {
       message: "Check your email for the magic link"
-    });
-  };
+    })
+  }
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
@@ -125,7 +125,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     <Link
-                      href="/reset-password"
+                      href="/auth/reset-password"
                       className="text-sm text-muted-foreground hover:text-primary"
                     >
                       Forgot password?
@@ -218,5 +218,5 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
         </div>
       </Tabs>
     </div>
-  );
+  )
 }
