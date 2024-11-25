@@ -1,14 +1,19 @@
-import { createClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { signUpSchema } from "@/lib/validations/auth";
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 export async function POST(request: Request) {
   try {
+    // Parse and validate request body
     const json = await request.json();
     const body = signUpSchema.parse(json);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signUp({
+    // Initialize Supabase client
+    const supabase = await createRouteHandlerClient();
+    
+    // Attempt signup
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email: body.email,
       password: body.password,
       options: {
@@ -16,21 +21,45 @@ export async function POST(request: Request) {
       },
     });
 
-    if (error) {
+    if (signUpError) {
+      console.error("Supabase signup error:", signUpError);
       return NextResponse.json(
-        { error: "Failed to sign up. Please try again." },
+        { 
+          error: signUpError.message || "Failed to sign up. Please try again.",
+          details: signUpError
+        },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { message: "Check your email to confirm your account" },
+      { 
+        message: "Check your email to confirm your account",
+        data 
+      },
       { status: 200 }
     );
   } catch (error) {
+    console.error("Signup route error:", error);
+
+    // Handle validation errors
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { 
+          error: "Invalid input data",
+          details: error.errors 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Handle other errors
     return NextResponse.json(
-      { error: "Invalid request. Please check your input." },
-      { status: 400 }
+      { 
+        error: "An unexpected error occurred. Please try again.",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
     );
   }
 }

@@ -3,17 +3,26 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, FieldError } from "react-hook-form";
 import { signUp } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
 import { Suspense } from "react";
+
+interface CustomFieldError extends FieldError {
+  type: "success" | "manual";
+  action?: string;
+}
+
+interface SignUpFormData extends SignUpInput {
+  root?: never;
+}
 
 export function SignUpForm({ className, ...props }: UserAuthFormProps) {
   const router = useRouter();
@@ -22,45 +31,51 @@ export function SignUpForm({ className, ...props }: UserAuthFormProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm<SignUpInput>({
+    clearErrors,
+  } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
   });
 
   const onSubmit = async (data: SignUpInput) => {
+    clearErrors("root");
     const { error } = await signUp(data);
 
     if (error) {
-      setError("root", { 
-        message: error.message,
-        type: "manual" 
-      });
+      setError("root" as any, { 
+        type: "manual",
+        message: error.message
+      } as CustomFieldError);
       return;
     }
 
     // Show success message
-    setError("root", {
-      message: "Check your email to confirm your account",
-      type: "success"
-    });
+    setError("root" as any, {
+      type: "success",
+      message: "Check your email to confirm your account"
+    } as CustomFieldError);
   };
+
+  const rootError = errors.root as CustomFieldError | undefined;
 
   return (
     <div className={cn("grid gap-8", className)} {...props}>
       <Suspense fallback={<SignUpFormSkeleton />}>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="grid gap-6">
-            {errors.root?.message && (
+            {rootError?.message && (
               <Alert 
-                variant={errors.root.type === "success" ? "success" : "destructive"} 
-                className="mb-4 flex items-center"
+                variant={rootError.type === "success" ? "success" : "destructive"} 
+                className="mb-4"
               >
-                {errors.root.type === "success" && (
-                  <Icons.check className="h-4 w-4 mr-2 flex-shrink-0" />
+                {rootError.type === "success" && (
+                  <Icons.check className="h-4 w-4" />
                 )}
-                <span>{errors.root.message}</span>
-                {errors.root.type !== "success" && errors.root?.action && (
-                  <span className="text-sm opacity-80 block mt-1">{errors.root.action}</span>
-                )}
+                <AlertDescription className="flex flex-col">
+                  <span>{rootError.message}</span>
+                  {rootError.type !== "success" && rootError.action && (
+                    <span className="text-sm opacity-80 mt-1">{rootError.action}</span>
+                  )}
+                </AlertDescription>
               </Alert>
             )}
             <div className="grid gap-2">
@@ -104,6 +119,9 @@ export function SignUpForm({ className, ...props }: UserAuthFormProps) {
               {errors.password && (
                 <p className="text-sm text-red-500">{errors.password.message}</p>
               )}
+              <p className="text-sm text-muted-foreground">
+                Password must be at least 8 characters and contain uppercase, lowercase, and numbers
+              </p>
             </div>
             <Button disabled={isSubmitting}>
               {isSubmitting && (

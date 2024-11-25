@@ -1,6 +1,13 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
+const cookieSettings: Partial<CookieOptions> = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/"
+}
+
 export async function createClient() {
   const cookieStore = await cookies()
 
@@ -14,10 +21,29 @@ export async function createClient() {
           return cookie?.value
         },
         async set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set(name, value, options)
+          try {
+            cookieStore.set({
+              name,
+              value,
+              ...cookieSettings,
+              ...options,
+            })
+          } catch (error) {
+            console.error("Error setting cookie:", error)
+          }
         },
         async remove(name: string, options: CookieOptions) {
-          cookieStore.set(name, "", { ...options, maxAge: 0 })
+          try {
+            cookieStore.set({
+              name,
+              value: "",
+              ...cookieSettings,
+              ...options,
+              maxAge: 0
+            })
+          } catch (error) {
+            console.error("Error removing cookie:", error)
+          }
         },
       },
     }
@@ -37,10 +63,29 @@ export async function createRouteHandlerClient() {
           return cookie?.value
         },
         async set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set(name, value, options)
+          try {
+            cookieStore.set({
+              name,
+              value,
+              ...cookieSettings,
+              ...options,
+            })
+          } catch (error) {
+            console.error("Error setting cookie:", error)
+          }
         },
         async remove(name: string, options: CookieOptions) {
-          cookieStore.set(name, "", { ...options, maxAge: 0 })
+          try {
+            cookieStore.set({
+              name,
+              value: "",
+              ...cookieSettings,
+              ...options,
+              maxAge: 0
+            })
+          } catch (error) {
+            console.error("Error removing cookie:", error)
+          }
         },
       },
     }

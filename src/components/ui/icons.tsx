@@ -7,6 +7,7 @@ import {
   SunMedium,
   Mail,
   Key,
+  Check,
 } from "lucide-react"
 
 export const Icons = {
@@ -15,6 +16,7 @@ export const Icons = {
   spinner: Loader2,
   mail: Mail,
   key: Key,
+  check: Check,
   google: (props: LucideProps) => (
     <svg role="img" viewBox="0 0 24 24" {...props}>
       <path

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { AuthLoading } from "@/components/loading/auth-loading"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CallbackPage() {
   const router = useRouter()
@@ -12,7 +12,7 @@ export default function CallbackPage() {
     const processCallback = async () => {
       const code = searchParams.get("code")
       const type = searchParams.get("type")
-      console.log("Callback page loaded with code:", code)
+      console.log("Callback page loaded with code:", code?.slice(0, 10) + "...")
       console.log("Type:", type)
 
       if (!code) {
@@ -40,10 +40,10 @@ export default function CallbackPage() {
         }
         
         console.log("Authentication successful, redirecting to home")
-        router.replace("/home")
+        router.replace("/")
       } catch (error) {
         console.error("Error in callback:", error)
-        router.replace("/auth/login?error=Failed to sign in")
+        router.replace("/auth/login?error=Failed to process authentication")
       }
     }
 
@@ -52,7 +52,10 @@ export default function CallbackPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <AuthLoading />
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-[250px]" />
+        <Skeleton className="h-4 w-[200px]" />
+      </div>
     </div>
   )
 }

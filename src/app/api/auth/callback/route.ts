@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     if (error) {
       console.error("Auth error:", error.message)
       return NextResponse.json(
-        { error: "Authentication failed" },
+        { error: error.message || "Authentication failed" },
         { status: 401 }
       )
     }
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error in callback route:", error)
     return NextResponse.json(
-      { error: "Failed to sign in" },
+      { error: error instanceof Error ? error.message : "Failed to sign in" },
       { status: 500 }
     )
   }
