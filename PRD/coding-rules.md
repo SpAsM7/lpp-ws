@@ -92,11 +92,14 @@
    - Store amounts in dollars (never cents/decimals)
    - For large values, display in thousands/millions format (e.g., $10M, $500K)
    - Never use floating point or decimal types for currency
-   - Display values must use proper formatting based on size
 2. Always use UUID for IDs
 3. Never skip audit fields (created_at, updated_at, etc.)
-4. Always implement row-level security (RLS)
-5. Never store sensitive data in JSONB fields:
+4. Always implement row-level security (RLS) in Supabase
+5. Data Access:
+   - Always use Supabase client methods for CRUD operations
+   - Never use .sql() or raw queries
+   - Always use TypeScript types from Supabase codegen
+6. Never store sensitive data in JSONB fields:
    - Use JSONB only for preferences, metadata, and configuration
    - Never store PII, financial data, or auth data in JSONB
    - Always validate JSONB data structure with zod
