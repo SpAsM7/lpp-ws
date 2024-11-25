@@ -1,0 +1,90 @@
+flowchart TB
+    subgraph Auth["Authentication Flow"]
+        Start([User Visits Site]) --> LoginCheck{Authenticated?}
+        LoginCheck -->|No| LoginPage[Login Page]
+        LoginCheck -->|Yes| Dashboard[Home Dashboard]
+        LoginPage --> LoginMethod{Login Method}
+        LoginMethod -->|Email/Password| EmailLogin[Email Login]
+        LoginMethod -->|OAuth| GoogleAuth[Google OAuth]
+        EmailLogin --> AuthSuccess{Success?}
+        GoogleAuth --> AuthSuccess
+        AuthSuccess -->|No| LoginPage
+        AuthSuccess -->|Yes| Dashboard
+    end
+
+    subgraph Home["Home Dashboard"]
+        Dashboard --> ActivityFeed[Activity Feed]
+        Dashboard --> PortfolioMetrics[Portfolio Metrics]
+        ActivityFeed --> ActivityFilters[Filter Controls]
+        ActivityFeed --> ActivityList[Activity List]
+        PortfolioMetrics --> TotalNAV[Total NAV]
+        PortfolioMetrics --> KeyMetrics[Key Metrics]
+    end
+
+    subgraph Nav["Navigation"]
+        MainNav{Main Navigation}
+        MainNav -->|Companies| CompanyView[Company View]
+        MainNav -->|Investments| InvestView[Investment View]
+        MainNav -->|Accounts| AccountView[Account View]
+        MainNav -->|Documents| DocView[Document View]
+    end
+
+    subgraph Companies["Companies Section"]
+        CompanyView --> CompanyList[Company List]
+        CompanyList --> CompanyDetail[Company Detail]
+        CompanyDetail --> CompanyOverview[Overview]
+        CompanyDetail --> RevenueGrowth[Revenue Growth]
+        CompanyDetail --> CompanyReports[Latest Reports]
+    end
+
+    subgraph Investments["Investments Section"]
+        InvestView --> InvestmentTable[Investment Table]
+        InvestmentTable --> ViewToggle{View Toggle}
+        ViewToggle -->|Company View| CompanyGrouped[Company Grouped]
+        ViewToggle -->|Account View| AccountGrouped[Account Grouped]
+        InvestmentTable --> FilterSort[Filter & Sort]
+    end
+
+    subgraph Accounts["Account Management"]
+        AccountView --> AccountList[Account List]
+        AccountList --> AccountDetail[Account Detail]
+        AccountDetail --> AccountInfo[Account Info]
+        AccountDetail --> TeamManagement[Team Management]
+        AccountDetail --> BankingInfo[Banking Info]
+        TeamManagement --> RoleManagement[Role Management]
+        RoleManagement --> Roles((Roles))
+        Roles --> Signer[Signer]
+        Roles --> Admin[Admin]
+        Roles --> Editor[Editor]
+        Roles --> Viewer[Viewer]
+    end
+
+    subgraph Documents["Document Management"]
+        DocView --> DocFilters[Document Filters]
+        DocView --> DocList[Document List]
+        DocList --> DocPreview[Document Preview]
+        DocFilters --> TypeFilter[Type Filter]
+        DocFilters --> DateFilter[Date Filter]
+        DocFilters --> EntityFilter[Entity Filter]
+        DocPreview --> DocActions[Document Actions]
+        DocActions --> Download[Download]
+        DocActions --> Share[Share]
+    end
+
+    %% Data Flow Connections
+    ActivityList -.->|Updates| PortfolioMetrics
+    CompanyDetail -.->|Company Data| InvestmentTable
+    AccountDetail -.->|Account Data| InvestmentTable
+    TeamManagement -.->|Access Control| DocView
+    AccountInfo -.->|Permissions| RoleManagement
+
+    %% Style Definitions
+    classDef primary fill:#d4e6f1,stroke:#2874a6,stroke-width:2px
+    classDef secondary fill:#d5f5e3,stroke:#196f3d,stroke-width:2px
+    classDef action fill:#fadbd8,stroke:#943126,stroke-width:2px
+    classDef data fill:#fdebd0,stroke:#b9770e,stroke-width:2px
+
+    class Auth,Home,Nav,Companies,Investments,Accounts,Documents primary
+    class LoginPage,Dashboard,CompanyView,InvestView,AccountView,DocView secondary
+    class Download,Share,RoleManagement action
+    class ActivityList,DocList,InvestmentTable,AccountList,CompanyList data

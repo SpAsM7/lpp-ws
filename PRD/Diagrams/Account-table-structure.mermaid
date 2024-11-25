@@ -1,0 +1,193 @@
+erDiagram
+    ACCOUNT ||--o| INDIVIDUAL_DETAILS : "has_if_individual"
+    ACCOUNT ||--o| ENTITY_DETAILS : "has_if_entity"
+    ACCOUNT ||--o| TRUST_DETAILS : "has_if_trust"
+    ACCOUNT ||--o| RETIREMENT_DETAILS : "has_if_retirement"
+    ACCOUNT ||--|{ BANK_INFO : has
+    ACCOUNT ||--o{ DOCUMENTS : stores
+    ACCOUNT ||--|| ACCREDITATION : requires
+    ACCOUNT ||--o| AML_VERIFICATION : "may_have"
+    ACCOUNT ||--|{ ROLES : has
+    
+    %% Team management
+    ROLES ||--o{ CONTACT_DESIGNATIONS : "may_have"
+    
+    %% Beneficial ownership relationships
+    ENTITY_DETAILS ||--o{ BENEFICIAL_OWNERS : "may_have"
+    TRUST_DETAILS ||--o{ BENEFICIAL_OWNERS : "may_have"
+    RETIREMENT_DETAILS ||--o{ BENEFICIAL_OWNERS : "may_have"
+
+    %% ERISA relationships
+    ENTITY_DETAILS ||--o| ERISA_STATUS : "may_have"
+    RETIREMENT_DETAILS ||--o| ERISA_STATUS : "may_have"
+
+    ACCOUNT {
+        uuid id PK
+        string account_name
+        string account_type
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    INDIVIDUAL_DETAILS {
+        uuid id PK
+        uuid account_id FK
+        string tax_id_type
+        string tax_id
+        boolean us_person
+        string tax_year_end
+        boolean joint_account
+        json joint_holder_info
+        string professional_title
+        string employer
+        boolean acting_as_nominee
+        json mailing_address
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ENTITY_DETAILS {
+        uuid id PK
+        uuid account_id FK
+        string entity_type
+        string tax_id
+        string jurisdiction
+        date formation_date
+        boolean us_person
+        string tax_year_end
+        boolean tax_exempt
+        boolean investment_company_status
+        boolean bank_entity_status
+        boolean formed_to_invest
+        boolean public_reporting_entity
+        string fatf_jurisdiction
+        json mailing_address
+        json principal_place_business
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    TRUST_DETAILS {
+        uuid id PK
+        uuid account_id FK
+        string trust_type
+        string tax_id
+        boolean us_person
+        string tax_year_end
+        boolean revocable
+        date formation_date
+        boolean formed_to_invest
+        boolean grantor_trust
+        json mailing_address
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    RETIREMENT_DETAILS {
+        uuid id PK
+        uuid account_id FK
+        string plan_type
+        string tax_id
+        string tax_year_end
+        boolean self_directed
+        json custodian_info
+        json mailing_address
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BENEFICIAL_OWNERS {
+        uuid id PK
+        uuid parent_id FK
+        string owner_type
+        string name
+        number ownership_percent
+        string relationship_type
+        boolean control_person
+        string tax_id
+        string citizenship
+        json employment_info
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ERISA_STATUS {
+        uuid id PK
+        uuid parent_id FK
+        boolean subject_to_erisa
+        number benefit_plan_percentage
+        string fiduciary_name
+        boolean governmental_plan
+        boolean church_plan
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ACCREDITATION {
+        uuid id PK
+        uuid account_id FK
+        string qualification_type
+        json qualification_details
+        date verified_at
+        date expires_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    AML_VERIFICATION {
+        uuid id PK
+        uuid account_id FK
+        string verification_type
+        json verification_details
+        boolean pep_status
+        boolean sanctions_check
+        date verified_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BANK_INFO {
+        uuid id PK
+        uuid account_id FK
+        string bank_name
+        string account_name
+        string account_number
+        string routing_number
+        string swift_code
+        string bank_address
+        string bank_country
+        boolean primary_account
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DOCUMENTS {
+        uuid id PK
+        uuid account_id FK
+        string document_type
+        string filename
+        string storage_path
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ROLES {
+        uuid id PK
+        uuid account_id FK
+        uuid user_id FK
+        string role_type
+        boolean can_remove_self
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CONTACT_DESIGNATIONS {
+        uuid id PK
+        uuid role_id FK
+        string designation_type
+        json contact_preferences
+        timestamp created_at
+        timestamp updated_at
+    }
