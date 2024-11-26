@@ -152,6 +152,40 @@ CREATE TRIGGER validate_trust_dates
     EXECUTE FUNCTION validate_dates();
 ```
 
+### **1.5 GP Role Validation**
+```sql
+CREATE OR REPLACE FUNCTION validate_gp_role()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Ensure user has GP status
+    IF NOT EXISTS (
+        SELECT 1 FROM user_profiles 
+        WHERE user_id = NEW.user_id 
+        AND is_gp_user = true
+    ) THEN
+        RAISE EXCEPTION 'User must be marked as GP user before assigning GP role';
+    END IF;
+
+    -- Ensure user doesn't already have a different GP role
+    IF EXISTS (
+        SELECT 1 FROM gp_roles 
+        WHERE user_id = NEW.user_id 
+        AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
+        AND deleted_at IS NULL
+    ) THEN
+        RAISE EXCEPTION 'User can only have one GP role';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_gp_role_trigger
+    BEFORE INSERT OR UPDATE ON gp_roles
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_gp_role();
+```
+
 ## **2. Utility Functions**
 
 ### **2.1 Soft Delete**

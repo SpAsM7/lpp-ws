@@ -200,3 +200,16 @@ ALTER SYSTEM SET autovacuum_analyze_scale_factor = 0.1;
 8. All text search fields must have trigram indexes
 9. All audit fields must be properly maintained
 10. All tables must have appropriate RLS policies
+
+## **7. GP Role Indexes**
+
+### **7.1 GP Role Indexes**
+```sql
+-- Add GP role indexes
+CREATE INDEX idx_gp_roles_user ON gp_roles(user_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_gp_roles_type ON gp_roles(role_type) WHERE deleted_at IS NULL;
+
+-- Add user type indexes
+CREATE INDEX idx_user_profiles_gp ON user_profiles(user_id) WHERE is_gp_user = true;
+CREATE INDEX idx_user_profiles_lp ON user_profiles(user_id) WHERE is_lp_user = true;
+```

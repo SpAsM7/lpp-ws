@@ -103,6 +103,13 @@
    - Use JSONB only for preferences, metadata, and configuration
    - Never store PII, financial data, or auth data in JSONB
    - Always validate JSONB data structure with zod
+7. GP/LP Role Separation:
+   - Always implement dual-check system for GP access (is_gp_user AND gp_role)
+   - Never mix GP and LP role checks in the same function
+   - Always separate GP and LP policies clearly
+   - Never grant GP access through LP role mechanisms
+   - Always audit GP actions separately
+   - Use explicit function names indicating GP/LP context (e.g., getGPUsers, getLPAccounts)
 
 ## Forms
 1. Always use react-hook-form with zod validation

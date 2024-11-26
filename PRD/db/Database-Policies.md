@@ -75,13 +75,21 @@ ALTER TABLE files ENABLE ROW LEVEL SECURITY;
 CREATE POLICY files_company_wide_policy ON files
     FOR SELECT
     USING (
-        visibility_scope = 'company_wide' 
-        AND auth.uid() IN (
-            SELECT r.user_id 
-            FROM roles r
-            JOIN investments i ON r.account_id = i.account_id
-            WHERE i.company_id = files.company_id
-            AND r.deleted_at IS NULL
+        EXISTS (
+            SELECT 1 FROM gp_roles 
+            WHERE user_id = auth.uid() 
+            AND deleted_at IS NULL
+        )
+        OR
+        (
+            visibility_scope = 'company_wide' 
+            AND auth.uid() IN (
+                SELECT r.user_id 
+                FROM roles r
+                JOIN investments i ON r.account_id = i.account_id
+                WHERE i.company_id = files.company_id
+                AND r.deleted_at IS NULL
+            )
         )
     );
 

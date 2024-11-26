@@ -51,7 +51,7 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
 
 ### **5.1 User Personas**
 
-1. **Primary Investor**:
+1. **LP (Limited Partner) Investor**:
    - **Characteristics**: Individual investing personally, through an IRA, or a family business
    - **Needs**:
      - View total investment positions across accounts
@@ -59,19 +59,27 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
      - Receive and read newsletters and reports
      - Access tax documents and other important files
 
-2. **Accountant/Admin/Advisor**:
-   - **Characteristics**: Users added by primary investors to help manage accounts
+2. **LP Support User**:
+   - **Characteristics**: Users added by LP investors to help manage accounts
    - **Needs**:
      - Access specific account information
      - Manage documents and reports relevant to their role
      - Update account information as needed
 
+3. **GP (General Partner) User**:
+   - **Characteristics**: Platform administrators and managers
+   - **Needs**:
+     - Manage documents and communications across all LP accounts
+     - Monitor and manage LP access
+     - Oversee platform operations
+     - Track document access and changes
+
 ### **5.2 User Types, Teams, and Account Relationships**
 
-- **Team Structure**: Teams are associated per account. A primary investor may have different team members for each account, such as an advisor for their personal account and a CFO for their holding company (holdco) account.
-- **User Roles Across Accounts**: A user can hold different roles across multiple accounts.
+- **LP Team Structure**: Teams are associated per LP account. A primary investor may have different team members for each account, such as an advisor for their personal account and a CFO for their holding company (holdco) account.
+- **LP User Roles Across Accounts**: An LP user can hold different roles across multiple accounts.
 
-### **5.3 User Types per Account**
+### **5.3 LP User Types per Account**
 
 - **Signer**: Primary owner of an account with full access, except for items restricted to a GP Portal user. Only a GP admin can remove or change the signer.
 - **Admin**: Can perform all actions except signing documents. Admins can remove themselves from an account.
@@ -80,11 +88,11 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
 
 ### **5.4 User Journeys**
 
-1. **Primary Investor**:
+1. **LP Investor Journey**:
    - **Scenario**: Reviewing total investment position
    - **Journey**: User logs in to home showing aggregated positions, navigates to specific company for detailed view, and can expand account breakdowns when needed
 
-2. **Investment-Focused Investor**:
+2. **Investment-Focused LP Journey**:
    - **Scenario**: Analyzing total position in a company across multiple accounts
    - **Journey**: 
      1. Views dashboard with aggregated investment positions
@@ -93,7 +101,7 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
      4. Expands view for account breakdown when needed
      5. Uses Account Management for administrative tasks
 
-3. **Accountant/Tax Professional**:
+3. **LP Support User Journey**:
    - **Scenario**: Accessing and downloading K-1s for tax preparation
    - **Journey**: 
      1. User receives email notification that new K-1s are available
@@ -105,10 +113,19 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
      4. Can bulk download selected documents
      5. System records document access for audit purposes
 
+4. **GP Admin Journey**:
+   - **Scenario**: Managing document distribution
+   - **Journey**:
+     1. Receives new quarterly reports
+     2. Reviews and prepares documents
+     3. Manages document visibility settings
+     4. Publishes to appropriate LP accounts
+     5. Monitors access and downloads
+
 ### **5.5 Activity Types and Use Cases**
 
 1. **Document Activities**
-   - Purpose: Track document availability and updates
+   - Visibility: LP sees own documents, GP sees all
    - Types:
      - New document uploaded
      - Document replaced/updated
@@ -117,7 +134,7 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
    - User Impact: Users receive clear notifications about important document updates and can quickly access new materials
 
 2. **Investment Activities**
-   - Purpose: Track investment changes and financial events
+   - Visibility: LP sees own investments, GP sees all
    - Types:
      - New investment made
      - Distribution/dividend paid
@@ -435,7 +452,11 @@ user_profiles
 ├── company_name
 └── profile settings/preferences
 
-Roles (join table between Users and Accounts)
+gp_roles
+├── user_id (references auth.users)
+└── role_type: admin, editor, viewer
+
+lp_roles (previously just "roles")
 ├── user_id (references auth.users)
 ├── account_id
 └── role_type: signer, admin, editor, viewer
@@ -588,7 +609,30 @@ Company Updates    | Company-wide       | GP Only
 - Secure password requirements
 - Multi-factor authentication support
 
-#### **7.2.2 Role-Based Access Control**
+#### **7.2.2 GP/LP Role Separation**
+
+The system maintains strict separation between GP (General Partner) and LP (Limited Partner) roles:
+
+1. **User Type Classification**
+   - Users can be GP, LP, or both
+   - GP status is managed at user level
+   - LP roles are managed at account level
+   
+2. **GP Roles**
+   - **Admin**: Full platform access and user management
+   - **Editor**: Can manage documents and data
+   - **Viewer**: Read-only access to GP functions
+   - GP roles are strictly separated from LP roles
+   - All GP actions are separately audited
+
+3. **Security Implementation**
+   - Separate role management systems for GP and LP access
+   - Impossible to accidentally grant GP access through LP mechanisms
+   - Function-level security checks for sensitive operations
+   - Clear policy separation between GP and LP access patterns
+   - Default-deny security model for GP functions
+
+#### **7.2.3 LP Role-Based Access Control**
 
 1. **Signer**
    - Full access to account information

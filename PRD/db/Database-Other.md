@@ -43,6 +43,39 @@ recovery_target_time = '2023-01-01 00:00:00'
 -- Create monitoring schema
 CREATE SCHEMA monitoring;
 
+-- Add GP role monitoring
+CREATE VIEW monitoring.gp_role_audit AS
+SELECT
+    u.email,
+    up.first_name,
+    up.last_name,
+    up.is_gp_user,
+    gr.role_type as gp_role,
+    gr.created_at as role_assigned,
+    gr.created_by as assigned_by
+FROM user_profiles up
+JOIN auth.users u ON up.user_id = u.id
+LEFT JOIN gp_roles gr ON up.user_id = gr.user_id
+WHERE up.is_gp_user = true
+AND gr.deleted_at IS NULL;
+
+-- Add GP action monitoring
+CREATE VIEW monitoring.gp_actions AS
+SELECT
+    a.activity_type,
+    a.title,
+    a.description,
+    u.email as performed_by,
+    gr.role_type as gp_role,
+    a.created_at
+FROM activities a
+JOIN user_profiles up ON a.user_id = up.user_id
+JOIN auth.users u ON up.user_id = u.id
+JOIN gp_roles gr ON up.user_id = gr.user_id
+WHERE up.is_gp_user = true
+AND gr.deleted_at IS NULL
+ORDER BY a.created_at DESC;
+
 -- Table size monitoring
 CREATE VIEW monitoring.table_sizes AS
 SELECT
@@ -125,6 +158,25 @@ WHERE state != 'idle';
 
 ### **3.1 Diagnostic Views**
 ```sql
+-- Add GP access diagnostic view
+CREATE VIEW monitoring.gp_access_diagnostic AS
+SELECT
+    u.email,
+    up.first_name,
+    up.last_name,
+    up.is_gp_user,
+    up.is_lp_user,
+    gr.role_type as gp_role,
+    COUNT(DISTINCT r.account_id) as lp_account_count,
+    STRING_AGG(DISTINCT r.role_type, ', ') as lp_roles
+FROM user_profiles up
+JOIN auth.users u ON up.user_id = u.id
+LEFT JOIN gp_roles gr ON up.user_id = gr.user_id
+LEFT JOIN roles r ON up.user_id = r.user_id
+WHERE (up.is_gp_user = true OR up.is_lp_user = true)
+AND up.deleted_at IS NULL
+GROUP BY u.email, up.first_name, up.last_name, up.is_gp_user, up.is_lp_user, gr.role_type;
+
 -- Table bloat check
 CREATE VIEW monitoring.table_bloat AS
 SELECT

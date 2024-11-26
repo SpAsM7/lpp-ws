@@ -17,7 +17,8 @@ CREATE TABLE user_profiles (
     linkedin_url           VARCHAR(255),
     profile_image_url      VARCHAR(255),
     timezone              VARCHAR(100),
-    is_gp_admin           BOOLEAN         NOT NULL DEFAULT false,
+    is_gp_user            BOOLEAN         NOT NULL DEFAULT false,
+    is_lp_user            BOOLEAN         NOT NULL DEFAULT false,
     communication_preferences JSONB        NOT NULL DEFAULT '{
         "email_notifications": {
             "newsletters": true,
@@ -559,3 +560,29 @@ CREATE INDEX idx_contact_designations_preferences ON contact_designations USING 
 -- Activity metadata
 CREATE INDEX idx_activities_metadata ON activities USING gin(metadata);
 CREATE INDEX idx_activities_read_status ON activities USING gin(read_status);
+
+```
+
+## **11. GP/LP Role Separation**
+
+### **11.1 gp_roles**
+```sql
+CREATE TABLE gp_roles (
+    id                   UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID            NOT NULL REFERENCES auth.users(user_id),
+    role_type           TEXT            NOT NULL,
+    created_at          TIMESTAMPTZ     NOT NULL DEFAULT now(),
+    created_by          UUID            NOT NULL REFERENCES auth.users(user_id),
+    updated_at          TIMESTAMPTZ     NOT NULL DEFAULT now(),
+    updated_by          UUID            NOT NULL REFERENCES auth.users(user_id),
+    deleted_at          TIMESTAMPTZ,
+    deleted_by          UUID            REFERENCES auth.users(user_id),
+
+    CONSTRAINT gp_roles_role_type_check
+        CHECK (role_type IN ('admin', 'editor', 'viewer')),
+    CONSTRAINT gp_roles_user_unique 
+        UNIQUE (user_id)
+);
+```
+
+</rewritten_file>
