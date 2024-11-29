@@ -65,10 +65,82 @@
    - Browser APIs
    - React hooks (useState, useEffect, etc.)
 3. Never fetch data in client components unless absolutely necessary
-4. Always use database functions for data operations - never raw SQL
+4. Always use Supabase client methods for data operations:
+   - Server Components: Use `createClient()` from `@/lib/supabase/server`
+   - Client Components: Use `createClient()` from `@/lib/supabase/client`
+   - API Routes: Use `createClient()` from `@/lib/supabase/server`
 5. Always implement preload pattern to prevent waterfalls
 6. Use Server Actions for form submissions and data mutations
 7. Use pagination for large data sets
+8. Never use raw SQL or direct database connections
+
+## Database
+1. Always use BIGINT for currency:
+   - Store amounts in dollars (never cents/decimals)
+   - For large values, display in thousands/millions format (e.g., $10M, $500K)
+   - Never use floating point or decimal types for currency
+2. Always use UUID for IDs
+3. Never skip audit fields (created_at, updated_at, etc.)
+4. Always implement row-level security (RLS) in Supabase:
+   - Define policies at table level
+   - Always test policies in isolation
+   - Document policy purpose in comments
+5. Data Access:
+   - Always use generated types from `database.ts`
+   - Always use Supabase client methods for CRUD operations
+   - Never use .sql() or raw queries
+   - Use appropriate client based on context (server vs client)
+6. Never store sensitive data in JSONB fields:
+   - Use JSONB only for preferences, metadata, and configuration
+   - Never store PII, financial data, or auth data in JSONB
+   - Always validate JSONB data structure with zod
+7. GP/LP Role Separation:
+   - Always implement dual-check system for GP access (is_gp_user AND gp_role)
+   - Never mix GP and LP role checks in the same function
+   - Always separate GP and LP policies clearly
+   - Never grant GP access through LP role mechanisms
+   - Always audit GP actions separately
+   - Use explicit function names indicating GP/LP context (e.g., getGPUsers, getLPAccounts)
+
+## Supabase Integration
+1. File Organization:
+   - `/src/lib/supabase/client.ts` - Client-side Supabase configuration
+   - `/src/lib/supabase/server.ts` - Server-side Supabase configuration
+   - `/src/types/database.ts` - Generated TypeScript type definitions
+   - `/supabase/migrations/` - Database migration files
+   - `/supabase/seed.sql` - Seed data for development
+
+2. Type Safety:
+   - Always use generated types from `database.ts`
+   - Never manually define database types
+   - Run `pnpm supabase gen types typescript --linked` after schema changes
+   - Keep `database.ts` in sync with migrations
+
+3. Client Usage:
+   - Server Components: Use `createClient()` from `@/lib/supabase/server`
+   - Client Components: Use `createClient()` from `@/lib/supabase/client`
+   - Middleware: Use `createServerClient()` from `@supabase/ssr`
+   - Route Handlers: Use `createClient()` from `@/lib/supabase/server`
+
+4. Authentication:
+   - Never store auth state in localStorage
+   - Always use Supabase session management
+   - Handle auth in middleware.ts using `createServerClient()`
+   - Protected routes must use RLS policies
+
+## Database Migrations
+1. All migrations MUST be stored in `/supabase/migrations`
+2. Migration files MUST follow pattern: `YYYYMMDDHHMMSS_description.sql`
+3. Always include explicit schema names (public, auth)
+4. Always consolidate multiple SQL statements into single query
+5. Always include rollback statements
+6. Always document migration steps in comments
+7. Migration Workflow:
+   - Run `db pull` before local schema changes
+   - Make schema changes through migrations only
+   - Test migrations with `db reset`
+   - Run `supabase gen types` after successful migration
+   - Never modify production schema directly
 
 ## Middleware
 1. Middleware MUST be in project root as `middleware.ts`
@@ -86,30 +158,6 @@
 8. Never use classes - use functional components
 9. Always use next/image for images - never raw <img> tags
 10. Always use next/font for fonts - never import font files directly
-
-## Database
-1. Always use BIGINT for currency:
-   - Store amounts in dollars (never cents/decimals)
-   - For large values, display in thousands/millions format (e.g., $10M, $500K)
-   - Never use floating point or decimal types for currency
-2. Always use UUID for IDs
-3. Never skip audit fields (created_at, updated_at, etc.)
-4. Always implement row-level security (RLS) in Supabase
-5. Data Access:
-   - Always use Supabase client methods for CRUD operations
-   - Never use .sql() or raw queries
-   - Always use TypeScript types from Supabase codegen
-6. Never store sensitive data in JSONB fields:
-   - Use JSONB only for preferences, metadata, and configuration
-   - Never store PII, financial data, or auth data in JSONB
-   - Always validate JSONB data structure with zod
-7. GP/LP Role Separation:
-   - Always implement dual-check system for GP access (is_gp_user AND gp_role)
-   - Never mix GP and LP role checks in the same function
-   - Always separate GP and LP policies clearly
-   - Never grant GP access through LP role mechanisms
-   - Always audit GP actions separately
-   - Use explicit function names indicating GP/LP context (e.g., getGPUsers, getLPAccounts)
 
 ## Forms
 1. Always use react-hook-form with zod validation
@@ -143,3 +191,10 @@
 3. Files must follow order: exports, subcomponents, helpers, static content, types
 4. Omit curly braces for single-line conditional statements
 5. Use descriptive variable names with auxiliary verbs (isLoading, hasError)
+
+## Code Editing and Content Preservation
+1. NEVER use placeholders like "[Previous content is the same]" or "[Existing Content]" when editing code
+2. Always preserve and explicitly write out ALL existing code when making changes
+3. When editing files, include the complete context of the changes being made
+4. Use proper version control practices - never assume content can be implicitly preserved
+5. All code changes must be explicit and visible in the diff
