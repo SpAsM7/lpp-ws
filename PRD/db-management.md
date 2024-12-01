@@ -28,7 +28,7 @@ pnpm supabase db push
 
 # Generate TypeScript types from current database schema
 # Updates your local types file with latest db structure
-pnpm supabase gen types typescript > src/types/database.ts
+pnpm supabase gen types typescript --project-id lszdhhcpjrcbciuftnit > src/types/database.ts
 
 # Show what changes would sync to cloud before pushing
 # Preview changes without applying them
@@ -182,3 +182,33 @@ pnpm supabase gen types typescript --linked > src/types/database.ts
    Other
 
    supabase db dump > supabase/migrations/schema.sql
+   supabase db dump --linked > src/scripts/consol-schema-ref.sql
+
+# AUDIT Toggle
+
+   ## Disable audit triggers
+
+    ALTER TABLE user_profiles DISABLE TRIGGER audit_user_profiles;
+    ALTER TABLE gp_roles DISABLE TRIGGER audit_gp_roles;
+    ALTER TABLE accounts DISABLE TRIGGER audit_accounts;
+    ALTER TABLE individual_details DISABLE TRIGGER audit_individual_details;
+    ALTER TABLE entity_details DISABLE TRIGGER audit_entity_details;
+    ALTER TABLE trust_details DISABLE TRIGGER audit_trust_details;
+    ALTER TABLE retirement_details DISABLE TRIGGER audit_retirement_details;
+    ALTER TABLE investments DISABLE TRIGGER audit_investments;
+    ALTER TABLE beneficial_owners DISABLE TRIGGER audit_beneficial_owners;
+    ALTER TABLE roles DISABLE TRIGGER audit_roles;
+
+   ## Re-enable audit triggers
+
+    ALTER TABLE user_profiles ENABLE TRIGGER audit_user_profiles;
+    ALTER TABLE gp_roles ENABLE TRIGGER audit_gp_roles;
+    ALTER TABLE accounts ENABLE TRIGGER audit_accounts;
+    ALTER TABLE individual_details ENABLE TRIGGER audit_individual_details;
+    ALTER TABLE entity_details ENABLE TRIGGER audit_entity_details;
+    ALTER TABLE trust_details ENABLE TRIGGER audit_trust_details;
+    ALTER TABLE retirement_details ENABLE TRIGGER audit_retirement_details;
+    ALTER TABLE investments ENABLE TRIGGER audit_investments;
+    ALTER TABLE beneficial_owners ENABLE TRIGGER audit_beneficial_owners;
+    ALTER TABLE roles ENABLE TRIGGER audit_roles;
+  
