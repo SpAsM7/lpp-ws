@@ -79,12 +79,20 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
 - **LP Team Structure**: Teams are associated per LP account. A primary investor may have different team members for each account, such as an advisor for their personal account and a CFO for their holding company (holdco) account.
 - **LP User Roles Across Accounts**: An LP user can hold different roles across multiple accounts.
 
-### **5.3 LP User Types per Account**
+### **5.3 User Types per Account**
 
+LP Roles - LP users with access to specific accounts:
 - **Signer**: Primary owner of an account with full access, except for items restricted to a GP Portal user. Only a GP admin can remove or change the signer.
 - **Admin**: Can perform all actions except signing documents. Admins can remove themselves from an account.
 - **Editor**: Can do everything an Admin can except add or remove team members. Editors can remove themselves from an account.
 - **Viewer**: Read-only user. Viewers can remove themselves from an account.
+
+GP Roles -Platform administrators with system-wide access:
+- **Admin**: Full platform control
+- **Editor**: Content and data management
+- **Viewer**: Read-only access
+
+GP status is managed separately from LP roles and requires both user-level GP designation and specific role assignment.
 
 ### **5.4 User Journeys**
 
@@ -296,7 +304,30 @@ The home page consists of two main sections: an activity feed panel on the left 
 - Sticky headers for both panels during scroll
 - Real-time updates for new activities
 
-#### **6.2.3 Companies**
+#### **6.2.3 Accounts**
+
+- **Account Types**:
+  - Individual accounts (personal investors)
+  - Entity accounts (corporations, LLCs, partnerships)
+  - Trust accounts (living trusts, charitable trusts)
+  - Retirement accounts (IRAs, 401ks)
+
+- **Account Management Features**:
+  - Type-specific documentation requirements
+  - Automated compliance checks
+  - Customized ownership structure handling
+  - Role-based access controls
+  - Automated document management based on account type
+
+- **Account Detail Views**:
+  - Account overview and status
+  - Team member management
+  - Document repository
+  - Investment summary
+  - Activity history
+  - Compliance status
+
+#### **6.2.4 Companies**
 
 - **Company Detail Views**:
   - **Company Overview Section**:
@@ -319,12 +350,12 @@ The home page consists of two main sections: an activity feed panel on the left 
     - Document metadata (title, format, size, timestamp)
 
 
-#### **6.2.4 Investments**
+#### **6.2.5 Investments**
 
 - **Page Layout**: Data table interface with filtering and view controls
 
 - **Header Controls**:
-  - Search bar with placeholder "Filter investments..."
+  - Search bar with placeholder "Search investments..."
   - View toggle buttons:
     - Company view
     - Account view
@@ -360,7 +391,7 @@ The home page consists of two main sections: an activity feed panel on the left 
   - Loading states for data updates
   - Empty state handling when no data matches filters
 
-#### **6.2.5 Documents**
+#### **6.2.6 Documents**
 
 - **Purpose**: Central repository for all documents with robust filtering and search
 
@@ -431,6 +462,14 @@ The home page consists of two main sections: an activity feed panel on the left 
       - View audit logging
 
 ### **6.3 Data Architecture**
+
+#### **System Implementation**
+The system implements:
+- Type-specific account management with shared core functionality
+- Comprehensive ownership tracking for applicable account types
+- Integrated compliance monitoring (AML, accreditation)
+- Automated document access control based on role and relationship
+- Strict separation between GP and LP access patterns
 
 #### **6.3.0 High-Level Database Schema**
 
