@@ -149,15 +149,18 @@
 
 ## Components
 1. Always use shadcn components instead of raw HTML/Tailwind
-2. Never modify shadcn component source files
-3. Always extend components through composition
-4. Custom components MUST go in `src/components`
-5. Use function keyword for components, not const
-6. Always use TypeScript interfaces over types
-7. Place static content and interfaces at end of file
-8. Never use classes - use functional components
-9. Always use next/image for images - never raw <img> tags
-10. Always use next/font for fonts - never import font files directly
+2. Install shadcn components via command line: `pnpm dlx shadcn@latest add <component-name>`
+   - Example: `pnpm dlx shadcn@latest add button`
+3. Never copy/paste shadcn component code directly
+4. Never modify shadcn component source files
+5. Always extend components through composition
+6. Custom components MUST go in `src/components`
+7. Use function keyword for components, not const
+8. Always use TypeScript interfaces over types
+9. Place static content and interfaces at end of file
+10. Never use classes - use functional components
+11. Always use next/image for images - never raw <img> tags
+12. Always use next/font for fonts - never import font files directly
 
 ## Forms
 1. Always use react-hook-form with zod validation

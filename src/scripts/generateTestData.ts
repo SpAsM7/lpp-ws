@@ -75,7 +75,7 @@ function generateCompany(userId: string): any {
 
 // Updated investment generator with explicit validation checks
 function generateInvestment(accountId: string, companyId: string, userId: string): any {
-  const status: InvestmentStatus = randomChoice(['active', 'pending', 'closed']);
+  const status: InvestmentStatus = randomChoice(['active', 'pending', 'fully_exited', 'partially_exited']);
   const type: InvestmentType = randomChoice(['direct', 'fund', 'spv']);
 
   return {

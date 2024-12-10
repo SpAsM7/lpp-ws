@@ -61,26 +61,36 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
   }
 
   const onMagicLinkSubmit = async (data: MagicLinkInput) => {
+    console.log("Requesting magic link for:", data.email)
     const supabase = createClient()
 
-    const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-      email: data.email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-
-    if (magicLinkError) {
-      setMagicLinkError("root", {
-        message: magicLinkError.message
+    try {
+      const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+        email: data.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       })
-      return
-    }
 
-    // Show success message
-    setMagicLinkError("root", {
-      message: "Check your email for the magic link"
-    })
+      console.log("Magic link request result:", magicLinkError ? "Error" : "Success")
+      if (magicLinkError) {
+        console.error("Magic link error:", magicLinkError)
+        setMagicLinkError("root", {
+          message: magicLinkError.message
+        })
+        return
+      }
+
+      // Show success message
+      setMagicLinkError("root", {
+        message: "Check your email for the magic link"
+      })
+    } catch (error) {
+      console.error("Unexpected error during magic link request:", error)
+      setMagicLinkError("root", {
+        message: "An unexpected error occurred"
+      })
+    }
   }
 
   return (

@@ -44,14 +44,14 @@
   - [x] After logging in, you stay logged in even after refreshing the page
 
 ### 2.2 Database Schema Implementation
-- [ ] Create core database tables
-- [ ] Set up relationships
-- [ ] Implement security policies
+- [x] Create core database tables
+- [x] Set up relationships
+- [x] Implement security policies
 - **Success Criteria**: 
-  - [ ] All tables appear in Supabase dashboard
-  - [ ] Can create test data in each table through the Supabase dashboard
-  - [ ] Relationships work (e.g., can link an investment to both a company and an account)
-  - [ ] Data appears properly formatted (dates, numbers, etc.)
+  - [x] All tables appear in Supabase dashboard
+  - [x] Can create test data in each table through the Supabase dashboard
+  - [x] Relationships work (e.g., can link an investment to both a company and an account)
+  - [x] Data appears properly formatted (dates, numbers, etc.)
 
 ### 2.3 Data Access Layer
 - [ ] Set up type definitions

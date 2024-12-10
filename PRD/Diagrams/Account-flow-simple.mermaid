@@ -1,0 +1,45 @@
+flowchart TD
+
+    A[Start] --> B[Select account_type]
+
+    %% Account Type Logic
+    B -->|personal| C[Select account_subtype: individual/joint]
+    B -->|entity| D[Select account_subtype: LLC/trust/partnership/corporation/non-profit/other]
+    B -->|retirement| E[Select account_subtype: IRA/401k]
+    B -->|special_other| F[Free-text description + doc uploads]
+
+    %% Personal Flows
+    C -->|individual| G[Collect personal_details: single owner info]
+    C -->|joint| H[Collect personal_details: multiple owners info]
+
+    %% Entity Flows
+    D -->|LLC| I[Collect entity_details: LLC info]
+    D -->|trust| J[Collect entity_details: trust info]
+    D -->|partnership| K[Collect entity_details: partnership info]
+    D -->|corporation| L[Collect entity_details: corporation info]
+    D -->|non-profit| M[Collect entity_details: non-profit info]
+    D -->|other| N[Free-text entity description + doc uploads]
+
+    %% Retirement Flows
+    E -->|IRA| O[Collect retirement_details: custodian + IRA info]
+    E -->|401k| P[Collect retirement_details: custodian + 401k plan info]
+
+    %% Special/Other
+    F --> Q[Manual review by compliance team]
+
+    %% Accreditation and Compliance
+    G --> R[Show compliance/accreditation fields as applicable]
+    H --> R
+    I --> R
+    J --> R
+    K --> R
+    L --> R
+    M --> R
+    N --> R
+    O --> R
+    P --> R
+    Q --> R
+
+    %% Documents and Finish
+    R --> S[Prompt for required docs: AML, tax forms, wire instructions]
+    S --> T[Complete onboarding]
