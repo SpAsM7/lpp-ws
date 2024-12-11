@@ -5,6 +5,9 @@ import { Label } from "@/components/ui/label"
 import { useWizard } from "@/lib/contexts/account-wizard"
 import { useFormContext } from "react-hook-form"
 import type { NewAccountFormData } from "@/lib/schemas/account"
+import { Icons } from "@/components/ui/icons"
+import { cn } from "@/lib/utils"
+import React from "react"
 
 const SUBTYPE_OPTIONS = {
   personal: [
@@ -12,13 +15,13 @@ const SUBTYPE_OPTIONS = {
       value: "individual", 
       label: "Individual Account", 
       description: "Single owner account with full control",
-      icon: "👤"
+      icon: Icons.user
     },
     { 
       value: "joint", 
       label: "Joint Account", 
       description: "Multiple owners with shared ownership and control",
-      icon: "👥"
+      icon: Icons.users
     }
   ],
   entity: [
@@ -26,37 +29,37 @@ const SUBTYPE_OPTIONS = {
       value: "LLC", 
       label: "Limited Liability Company", 
       description: "Flexible business structure with liability protection",
-      icon: "🏢"
+      icon: Icons.building2
     },
     { 
       value: "trust", 
       label: "Trust", 
       description: "Legal arrangement for asset management and distribution",
-      icon: "📜"
+      icon: Icons.scroll
     },
     { 
       value: "partnership", 
       label: "Partnership", 
       description: "Business owned and operated by multiple partners",
-      icon: "🤝"
+      icon: Icons.users
     },
     { 
       value: "corporation", 
       label: "Corporation", 
       description: "Formal business structure with shareholders",
-      icon: "🏛️"
+      icon: Icons.landmark
     },
     { 
       value: "non-profit", 
       label: "Non-Profit", 
       description: "Organization operating for charitable or educational purposes",
-      icon: "🎗️"
+      icon: Icons.heart
     },
     { 
       value: "other", 
       label: "Other Entity", 
       description: "Other business structures requiring special handling",
-      icon: "✨"
+      icon: Icons.star
     }
   ],
   retirement: [
@@ -64,13 +67,13 @@ const SUBTYPE_OPTIONS = {
       value: "IRA", 
       label: "Individual Retirement Account", 
       description: "Tax-advantaged personal retirement account",
-      icon: "💰"
+      icon: Icons.piggyBank
     },
     { 
       value: "401k", 
       label: "401(k) Plan", 
       description: "Employer-sponsored retirement savings plan",
-      icon: "🏦"
+      icon: Icons.briefcase
     }
   ],
   special_other: [
@@ -78,7 +81,7 @@ const SUBTYPE_OPTIONS = {
       value: "other", 
       label: "Special Account", 
       description: "Special account type requiring manual review",
-      icon: "⭐"
+      icon: Icons.star
     }
   ]
 } as const
@@ -131,11 +134,21 @@ export function AccountSubtypeStep() {
             />
             <Label
               htmlFor={type.value}
-              className="flex items-start space-x-4 p-6 bg-white rounded-lg border-2 [&:has([data-state=checked])]:border-primary cursor-pointer hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
+              className={cn(
+                "flex items-start space-x-4 p-6 rounded-lg border border-input",
+                "cursor-pointer bg-background hover:bg-accent",
+                "peer-data-[state=checked]:bg-secondary"
+              )}
             >
-              <span className="text-2xl">{type.icon}</span>
-              <div className="space-y-1">
-                <p className="text-base font-semibold">{type.label}</p>
+              <span className={cn(
+                "flex-shrink-0 h-5 w-5 mt-1",
+                "text-muted-foreground",
+                "peer-data-[state=checked]:text-primary"
+              )}>
+                {React.createElement(type.icon, { className: "h-5 w-5" })}
+              </span>
+              <div className="space-y-1 flex-grow">
+                <p className="font-semibold tracking-tight">{type.label}</p>
                 <p className="text-sm text-muted-foreground">
                   {type.description}
                 </p>

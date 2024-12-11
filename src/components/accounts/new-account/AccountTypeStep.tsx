@@ -6,31 +6,34 @@ import { Card } from "@/components/ui/card"
 import { useWizard } from "@/lib/contexts/account-wizard"
 import { useFormContext } from "react-hook-form"
 import type { AccountType, NewAccountFormData } from "@/lib/schemas/account"
+import { cn } from "@/lib/utils"
+import { Icons } from "@/components/ui/icons"
+import React from "react"
 
 const ACCOUNT_TYPES = [
   {
     value: "personal",
     label: "Personal Account",
     description: "Individual or joint account for personal investments",
-    icon: "👤"
+    icon: Icons.user
   },
   {
     value: "entity",
     label: "Entity Account",
     description: "LLC, Trust, Partnership, or Corporation",
-    icon: "🏢"
+    icon: Icons.building2
   },
   {
     value: "retirement",
     label: "Retirement Account",
     description: "IRA or 401(k) accounts",
-    icon: "🏦"
+    icon: Icons.piggyBank
   },
   {
     value: "special_other",
     label: "Special/Other",
     description: "Other account types requiring special handling",
-    icon: "✨"
+    icon: Icons.star
   }
 ] as const
 
@@ -82,11 +85,21 @@ export function AccountTypeStep() {
             />
             <Label
               htmlFor={type.value}
-              className="flex items-start space-x-4 p-6 bg-white rounded-lg border-2 [&:has([data-state=checked])]:border-primary cursor-pointer hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
+              className={cn(
+                "flex items-start space-x-4 p-6 rounded-lg border border-input",
+                "cursor-pointer bg-background hover:bg-accent",
+                "peer-data-[state=checked]:bg-secondary"
+              )}
             >
-              <span className="text-2xl">{type.icon}</span>
-              <div className="space-y-1">
-                <p className="text-base font-semibold">{type.label}</p>
+              <span className={cn(
+                "flex-shrink-0 h-5 w-5 mt-1",
+                "text-muted-foreground",
+                "peer-data-[state=checked]:text-primary"
+              )}>
+                {React.createElement(type.icon, { className: "h-5 w-5" })}
+              </span>
+              <div className="space-y-1 flex-grow">
+                <p className="font-semibold tracking-tight">{type.label}</p>
                 <p className="text-sm text-muted-foreground">
                   {type.description}
                 </p>

@@ -164,6 +164,22 @@
 11. Always use next/image for images - never raw <img> tags
 12. Always use next/font for fonts - never import font files directly
 
+## Icons and Visual Elements
+1. Always use Lucide icons from `@/components/ui/icons`:
+   - Import from centralized Icons component
+   - Never use emoji or Unicode icons directly
+   - Use consistent icon sizes (h-4 w-4 for inline, h-5 w-5 for buttons)
+   - Maintain WCAG contrast requirements
+2. Icon Colors:
+   - Use `text-muted-foreground` for default state
+   - Use `text-primary` for active/selected state
+   - Use `text-destructive` for error states
+   - Use `text-green-500` for success states
+3. Icon Placement:
+   - Maintain consistent spacing with text (space-x-2 for inline)
+   - Align icons with text baseline
+   - Use flexbox for icon + text combinations
+
 ## Forms
 1. Always use react-hook-form with zod validation
 2. Never use uncontrolled form inputs
@@ -196,6 +212,36 @@
 3. Files must follow order: exports, subcomponents, helpers, static content, types
 4. Omit curly braces for single-line conditional statements
 5. Use descriptive variable names with auxiliary verbs (isLoading, hasError)
+
+## Styling and Theme
+1. Always use global theme colors from the shadcn theme configuration:
+   - Use `bg-accent` for hover states
+   - Use `bg-secondary` for selected/active states
+   - Use `bg-primary` for primary actions and focus states
+   - Use `bg-muted` for subtle backgrounds
+   - Never hardcode colors that are defined in the theme
+2. Component Variants:
+   - Always define variants using the cva helper from class-variance-authority
+   - Place variant definitions in the component's root file
+   - Export variant types for reuse
+3. CSS Variables:
+   - Use `hsl(var(--primary))` format for direct color access
+   - Define component-specific CSS variables in the component's module
+   - Never use raw HSL values
+4. Dark Mode:
+   - Always implement dark mode variants
+   - Use `dark:` modifier for dark-specific styles
+   - Test all components in both light and dark modes
+5. Component Styling:
+   - Use cn() utility for conditional class merging
+   - Keep styles co-located with components
+   - Use data-[state] attributes for component states
+   - Prefer Tailwind classes over custom CSS
+6. Style Inheritance:
+   - Use className prop for style overrides
+   - Implement forwardRef for proper ref handling
+   - Allow style customization through component props
+7. Never mix different styling approaches for the same UI pattern
 
 ## Code Editing and Content Preservation
 1. NEVER use placeholders like "[Previous content is the same]" or "[Existing Content]" when editing code

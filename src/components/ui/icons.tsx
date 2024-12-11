@@ -9,6 +9,15 @@ import {
   AlertTriangle,
   Pencil,
   Trash2,
+  User,
+  Users,
+  Building,
+  Building2,
+  Scroll,
+  Landmark,
+  Heart,
+  Star,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react"
 
@@ -25,6 +34,50 @@ export const Icons = {
   warning: AlertTriangle,
   edit: Pencil,
   trash: Trash2,
+  user: User,
+  users: Users,
+  building: Building,
+  building2: Building2,
+  scroll: Scroll,
+  landmark: Landmark,
+  heart: Heart,
+  star: Star,
+  briefcase: Briefcase,
+  piggyBank: (props: React.ComponentProps<"svg">) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/>
+      <path d="M2 9v1c0 1.1.9 2 2 2h1"/>
+      <path d="M16 11c0 .6-.4 1-1 1s-1-.4-1-1 .4-1 1-1 1 .4 1 1z"/>
+    </svg>
+  ),
+  handshake: (props: React.ComponentProps<"svg">) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/>
+      <path d="M12 5.36 8.87 8.5a2.13 2.13 0 0 0 0 3l3.13 3.13 3.13-3.13c.83-.83.83-2.17 0-3L12 5.36z"/>
+    </svg>
+  ),
   google: (props: React.ComponentProps<"svg">) => (
     <svg
       aria-hidden="true"
