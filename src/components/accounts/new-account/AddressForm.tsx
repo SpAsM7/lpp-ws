@@ -38,11 +38,12 @@ export function AddressForm() {
       <FormField
         control={control}
         name="address.street1"
+        rules={{ required: "Street address is required" }}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Street Address</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input {...field} value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -56,7 +57,7 @@ export function AddressForm() {
           <FormItem>
             <FormLabel>Street Address 2 (Optional)</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input {...field} value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -67,11 +68,12 @@ export function AddressForm() {
         <FormField
           control={control}
           name="address.city"
+          rules={{ required: "City is required" }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>City</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,15 +83,17 @@ export function AddressForm() {
         <FormField
           control={control}
           name="address.state"
+          rules={{ required: "State is required" }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>State</FormLabel>
               <FormControl>
                 <Combobox
                   options={stateOptions}
-                  value={field.value}
+                  value={field.value || ""}
                   onValueChange={field.onChange}
                   placeholder="Select state"
+                  name={field.name}
                 />
               </FormControl>
               <FormMessage />
@@ -100,11 +104,12 @@ export function AddressForm() {
         <FormField
           control={control}
           name="address.postal_code"
+          rules={{ required: "Postal code is required" }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Postal Code</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -114,15 +119,17 @@ export function AddressForm() {
         <FormField
           control={control}
           name="address.country"
+          rules={{ required: "Country is required" }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Country</FormLabel>
               <FormControl>
                 <Combobox
                   options={countryOptions}
-                  value={field.value}
+                  value={field.value || ""}
                   onValueChange={field.onChange}
                   placeholder="Select country"
+                  name={field.name}
                 />
               </FormControl>
               <FormMessage />

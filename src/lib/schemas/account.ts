@@ -22,8 +22,16 @@ export const entityDetailsSchema = z.object({
   is_foreign: z.boolean(),
   entity_specific_info: z.object({
     trust: z.object({
-      trust_type: z.enum(["revocable", "irrevocable"]),
-      grantor_status: z.enum(["grantor trust", "non-grantor trust"]),
+      trust_type: z.string().refine(
+        (val): val is "living" | "testamentary" | "charitable" | "business" => 
+        ["living", "testamentary", "charitable", "business"].includes(val),
+        "Invalid trust type"
+      ),
+      grantor_status: z.string().refine(
+        (val): val is "grantor trust" | "non-grantor trust" => 
+        ["grantor trust", "non-grantor trust"].includes(val),
+        "Invalid grantor status"
+      ),
       beneficiary: z.string().min(1, "Beneficiary is required")
     }).optional()
   }).optional()

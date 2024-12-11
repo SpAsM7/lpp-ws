@@ -3,6 +3,8 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useWizard } from "@/lib/contexts/account-wizard"
+import { useFormContext } from "react-hook-form"
+import type { NewAccountFormData } from "@/lib/schemas/account"
 
 const SUBTYPE_OPTIONS = {
   personal: [
@@ -83,6 +85,7 @@ const SUBTYPE_OPTIONS = {
 
 export function AccountSubtypeStep() {
   const { state, updateForm, setValid } = useWizard()
+  const { setValue, getValues } = useFormContext<NewAccountFormData>()
   const { account_type, account_subtype } = state.formData
 
   if (!account_type) return null
@@ -90,8 +93,26 @@ export function AccountSubtypeStep() {
   const options = SUBTYPE_OPTIONS[account_type]
 
   const handleChange = (newValue: string) => {
+    console.log('AccountSubtypeStep - Before Update:', { 
+      currentValue: account_subtype,
+      newValue,
+      formData: state.formData 
+    })
+
+    // Update form context first
+    setValue('account_subtype', newValue, { shouldValidate: true })
+
+    // Then update wizard state
     updateForm({ account_subtype: newValue })
+
+    // Set valid after both updates
     setValid(true)
+
+    console.log('AccountSubtypeStep - After Update:', { 
+      newValue,
+      formData: getValues(),
+      wizardState: state.formData
+    })
   }
 
   return (
@@ -101,22 +122,22 @@ export function AccountSubtypeStep() {
         onValueChange={handleChange}
         className="grid gap-4"
       >
-        {options.map((option) => (
-          <div key={option.value} className="relative">
+        {options.map((type) => (
+          <div key={type.value} className="relative">
             <RadioGroupItem
-              value={option.value}
-              id={option.value}
+              value={type.value}
+              id={type.value}
               className="peer sr-only"
             />
             <Label
-              htmlFor={option.value}
+              htmlFor={type.value}
               className="flex items-start space-x-4 p-6 bg-white rounded-lg border-2 [&:has([data-state=checked])]:border-primary cursor-pointer hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
             >
-              <span className="text-2xl">{option.icon}</span>
+              <span className="text-2xl">{type.icon}</span>
               <div className="space-y-1">
-                <p className="text-base font-semibold">{option.label}</p>
+                <p className="text-base font-semibold">{type.label}</p>
                 <p className="text-sm text-muted-foreground">
-                  {option.description}
+                  {type.description}
                 </p>
               </div>
             </Label>

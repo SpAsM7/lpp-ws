@@ -4,7 +4,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { useWizard } from "@/lib/contexts/account-wizard"
-import type { AccountType } from "@/lib/schemas/account"
+import { useFormContext } from "react-hook-form"
+import type { AccountType, NewAccountFormData } from "@/lib/schemas/account"
 
 const ACCOUNT_TYPES = [
   {
@@ -35,15 +36,34 @@ const ACCOUNT_TYPES = [
 
 export function AccountTypeStep() {
   const { state, updateForm, setValid } = useWizard()
+  const { setValue, getValues } = useFormContext<NewAccountFormData>()
   const value = state.formData.account_type
 
   const handleChange = (newValue: AccountType) => {
-    updateForm({ account_type: newValue })
+    console.log('AccountTypeStep - Before Update:', { 
+      currentValue: value,
+      newValue,
+      formData: state.formData 
+    })
+
+    // Update form context first
+    setValue('account_type', newValue, { shouldValidate: true })
+    setValue('account_subtype', undefined, { shouldValidate: true })
+
+    // Then update wizard state
+    updateForm({
+      account_type: newValue,
+      account_subtype: undefined
+    })
+
+    // Set valid after both updates
     setValid(true)
-    // Reset subtype when type changes
-    if (newValue !== state.formData.account_type) {
-      updateForm({ account_subtype: undefined })
-    }
+
+    console.log('AccountTypeStep - After Update:', { 
+      newValue,
+      formData: getValues(),
+      wizardState: state.formData
+    })
   }
 
   return (
