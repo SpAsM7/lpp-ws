@@ -82,17 +82,17 @@ This PRD outlines the requirements for developing a clean and intuitive full-sta
 ### **5.3 User Types per Account**
 
 LP Roles - LP users with access to specific accounts:
-- **Signer**: Primary owner of an account with full access, except for items restricted to a GP Portal user. Only a GP admin can remove or change the signer.
-- **Admin**: Can perform all actions except signing documents. Admins can remove themselves from an account.
-- **Editor**: Can do everything an Admin can except add or remove team members. Editors can remove themselves from an account.
-- **Viewer**: Read-only user. Viewers can remove themselves from an account.
+  - **Signer**: Primary owner of an account with full access, except for items restricted to a GP Portal user. Only a GP admin can remove or change the signer.
+  - **Admin**: Can perform all actions except signing documents. Admins can remove themselves from an account.
+  - **Editor**: Can do everything an Admin can except add or remove team members. Editors can remove themselves from an account.
+  - **Viewer**: Read-only user. Viewers can remove themselves from an account.
 
 GP Roles -Platform administrators with system-wide access:
-- **Admin**: Full platform control
-- **Editor**: Content and data management
-- **Viewer**: Read-only access
+  - **Admin**: Full platform control
+  - **Editor**: Content and data management
+  - **Viewer**: Read-only access
 
-GP status is managed separately from LP roles and requires both user-level GP designation and specific role assignment.
+  GP status is managed separately from LP roles and requires both user-level GP designation and specific role assignment.
 
 ### **5.4 User Journeys**
 
@@ -307,10 +307,10 @@ The home page consists of two main sections: an activity feed panel on the left 
 #### **6.2.3 Accounts**
 
 - **Account Types**:
-  - Individual accounts (personal investors)
-  - Entity accounts (corporations, LLCs, partnerships)
-  - Trust accounts (living trusts, charitable trusts)
+  - Personal accounts (individual or joint)
+  - Entity accounts (LLCs, trusts, partnerships, corporations)
   - Retirement accounts (IRAs, 401ks)
+  - Special/Other accounts (special purpose accounts)
 
 - **Account Management Features**:
   - Type-specific documentation requirements

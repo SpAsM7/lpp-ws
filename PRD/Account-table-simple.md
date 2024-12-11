@@ -6,7 +6,7 @@ roles (one-to-many): team member associations
 created_by/updated_by (many-to-one to users)
 
 ## General Tab
-id (UUID, PK)  
+account_id (UUID, PK)  
 account_number (string)  
 legal_name (string)  
 account_type (string: personal/entity/retirement/special_other)  

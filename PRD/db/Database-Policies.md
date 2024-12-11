@@ -13,7 +13,7 @@ CREATE POLICY account_view_policy ON accounts
         auth.uid() IN (
             SELECT user_id 
             FROM roles 
-            WHERE account_id = accounts.account_id 
+            WHERE account_id = accounts.id 
             AND deleted_at IS NULL
         )
     );
@@ -25,7 +25,7 @@ CREATE POLICY account_modify_policy ON accounts
         auth.uid() IN (
             SELECT user_id 
             FROM roles 
-            WHERE account_id = accounts.account_id 
+            WHERE account_id = accounts.id 
             AND role_type IN ('signer', 'admin')
             AND deleted_at IS NULL
         )
@@ -34,33 +34,31 @@ CREATE POLICY account_modify_policy ON accounts
 
 ### **1.2 Account Details Access**
 ```sql
--- Apply to all detail tables
-ALTER TABLE individual_details ENABLE ROW LEVEL SECURITY;
-ALTER TABLE entity_details ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trust_details ENABLE ROW LEVEL SECURITY;
-ALTER TABLE retirement_details ENABLE ROW LEVEL SECURITY;
+-- No separate policies needed for account details since they are now JSONB fields in the accounts table
+-- Access is controlled through the base account policies above
+```
 
--- Example for individual_details (repeat for other detail tables)
-CREATE POLICY details_view_policy ON individual_details
-    FOR SELECT
+### **1.3 Role Access**
+```sql
+ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
+
+-- Only GP admins and account signers/admins can manage roles
+CREATE POLICY roles_manage_policy ON roles
+    FOR ALL
     USING (
         auth.uid() IN (
             SELECT user_id 
             FROM roles 
-            WHERE account_id = individual_details.account_id 
-            AND deleted_at IS NULL
-        )
-    );
-
-CREATE POLICY details_modify_policy ON individual_details
-    FOR UPDATE
-    USING (
-        auth.uid() IN (
-            SELECT user_id 
-            FROM roles 
-            WHERE account_id = individual_details.account_id 
+            WHERE account_id = roles.account_id 
             AND role_type IN ('signer', 'admin')
             AND deleted_at IS NULL
+        )
+        OR 
+        EXISTS (
+            SELECT 1 
+            FROM user_profiles 
+            WHERE user_id = auth.uid() 
+            AND is_gp_user = true
         )
     );
 ```
@@ -71,55 +69,34 @@ CREATE POLICY details_modify_policy ON individual_details
 ```sql
 ALTER TABLE files ENABLE ROW LEVEL SECURITY;
 
--- Company-wide documents
-CREATE POLICY files_company_wide_policy ON files
+CREATE POLICY files_view_policy ON files
     FOR SELECT
     USING (
-        EXISTS (
-            SELECT 1 FROM gp_roles 
-            WHERE user_id = auth.uid() 
-            AND deleted_at IS NULL
-        )
-        OR
         (
-            visibility_scope = 'company_wide' 
-            AND auth.uid() IN (
-                SELECT r.user_id 
-                FROM roles r
-                JOIN investments i ON r.account_id = i.account_id
-                WHERE i.company_id = files.company_id
-                AND r.deleted_at IS NULL
-            )
-        )
-    );
-
--- Investment-specific documents
-CREATE POLICY files_investment_specific_policy ON files
-    FOR SELECT
-    USING (
-        visibility_scope = 'investment_specific'
-        AND auth.uid() IN (
-            SELECT user_id 
-            FROM roles 
-            WHERE account_id IN (
-                SELECT account_id 
-                FROM investments 
-                WHERE investment_id = files.investment_id
-            )
-            AND deleted_at IS NULL
-        )
-    );
-
--- Account-specific documents
-CREATE POLICY files_account_specific_policy ON files
-    FOR SELECT
-    USING (
-        visibility_scope = 'account_specific'
-        AND auth.uid() IN (
-            SELECT user_id 
-            FROM roles 
-            WHERE account_id = files.account_id
-            AND deleted_at IS NULL
+            -- Account-specific documents
+            (account_id IS NOT NULL AND
+            auth.uid() IN (
+                SELECT user_id 
+                FROM roles 
+                WHERE account_id = files.account_id 
+                AND deleted_at IS NULL
+            ))
+            OR
+            -- Investment-specific documents
+            (investment_id IS NOT NULL AND
+            auth.uid() IN (
+                SELECT user_id 
+                FROM roles 
+                WHERE account_id IN (
+                    SELECT account_id 
+                    FROM investments 
+                    WHERE investment_id = files.investment_id
+                )
+                AND deleted_at IS NULL
+            ))
+            OR
+            -- Company-wide documents
+            (company_id IS NOT NULL AND visibility_scope = 'company_wide')
         )
     );
 ```

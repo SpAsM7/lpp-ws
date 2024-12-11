@@ -63,6 +63,89 @@ deleted_at    TIMESTAMPTZ,
 deleted_by    UUID           REFERENCES auth.users(user_id) ON DELETE RESTRICT
 ```
 
+### **2.2 JSONB Field Standards**
+- **Structure**
+  - Use nested objects sparingly
+  - Keep structure flat when possible
+  - Always include version field for schema evolution
+  - Use consistent naming across all JSONB fields
+
+- **Account Type-Specific JSONB Fields**
+  ```sql
+  -- Personal Account Details
+  {
+    "version": "1.0",
+    "owners": [
+      {
+        "name": "string",
+        "ownership_percentage": "number?"  // Required for joint accounts
+      }
+    ]
+  }
+
+  -- Entity Account Details
+  {
+    "version": "1.0",
+    "formation_date": "date",
+    "formation_state": "string",
+    "formation_country": "string",
+    "fiscal_year_end": "date",
+    "is_privately_held": "boolean",
+    "is_foreign": "boolean",
+    "entity_specific_info": {
+      "trust": {
+        "trust_type": "string",
+        "grantor_status": "string",
+        "beneficiary": "string"
+      }
+    }
+  }
+
+  -- Retirement Account Details
+  {
+    "version": "1.0",
+    "custodian_name": "string",
+    "plan_name": "string?"  // Required for 401k
+  }
+  ```
+
+### **2.3 Account Type Validation**
+```sql
+-- Account type and subtype validation using CHECK constraints
+ALTER TABLE accounts ADD CONSTRAINT accounts_account_type_check 
+    CHECK (account_type IN ('personal', 'entity', 'retirement', 'special_other'));
+
+ALTER TABLE accounts ADD CONSTRAINT accounts_account_subtype_check 
+    CHECK (
+        (account_type = 'personal' AND account_subtype IN ('individual', 'joint'))
+        OR
+        (account_type = 'entity' AND account_subtype IN ('LLC', 'trust', 'partnership', 'corporation'))
+        OR
+        (account_type = 'retirement' AND account_subtype IN ('IRA', '401k'))
+        OR
+        (account_type = 'special_other')
+    );
+
+-- JSONB field validation
+ALTER TABLE accounts ADD CONSTRAINT valid_personal_details 
+    CHECK (
+        (account_type = 'personal' AND personal_details IS NOT NULL)
+        OR account_type != 'personal'
+    );
+
+ALTER TABLE accounts ADD CONSTRAINT valid_retirement_details 
+    CHECK (
+        (account_type = 'retirement' AND retirement_details IS NOT NULL)
+        OR account_type != 'retirement'
+    );
+
+ALTER TABLE accounts ADD CONSTRAINT valid_entity_details 
+    CHECK (
+        (account_type = 'entity' AND entity_details IS NOT NULL)
+        OR account_type != 'entity'
+    );
+```
+
 ### **2.3 Naming Conventions**
 
 #### **Tables**
@@ -212,4 +295,3 @@ CREATE INDEX idx_gp_roles_type ON gp_roles(role_type) WHERE deleted_at IS NULL;
 -- Add user type indexes
 CREATE INDEX idx_user_profiles_gp ON user_profiles(user_id) WHERE is_gp_user = true;
 CREATE INDEX idx_user_profiles_lp ON user_profiles(user_id) WHERE is_lp_user = true;
-```

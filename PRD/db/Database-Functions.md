@@ -5,16 +5,20 @@
 ### **1.1 Tax ID Validation**
 ```sql
 CREATE OR REPLACE FUNCTION validate_tax_id(
-    tax_id_type TEXT,
+    account_type TEXT,
     tax_id TEXT
 ) RETURNS BOOLEAN AS $$
 BEGIN
-    CASE tax_id_type
-        WHEN 'ssn' THEN
-            RETURN tax_id ~ '^[0-9]{3}-[0-9]{2}-[0-9]{4}$';
-        WHEN 'itin' THEN
-            RETURN tax_id ~ '^9[0-9]{2}-[0-9]{2}-[0-9]{4}$';
-        WHEN 'ein' THEN
+    CASE 
+        WHEN account_type = 'personal' THEN
+            -- SSN or ITIN for personal accounts
+            RETURN tax_id ~ '^[0-9]{3}-[0-9]{2}-[0-9]{4}$' OR
+                   tax_id ~ '^9[0-9]{2}-[0-9]{2}-[0-9]{4}$';
+        WHEN account_type = 'entity' THEN
+            -- EIN for entity accounts
+            RETURN tax_id ~ '^[0-9]{2}-[0-9]{7}$';
+        WHEN account_type = 'retirement' THEN
+            -- EIN for retirement accounts
             RETURN tax_id ~ '^[0-9]{2}-[0-9]{7}$';
         ELSE
             RETURN TRUE;
@@ -23,102 +27,105 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply validation through trigger
-CREATE OR REPLACE FUNCTION validate_tax_id_trigger()
+CREATE OR REPLACE FUNCTION validate_account_tax_id_trigger()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NOT validate_tax_id(NEW.tax_id_type, NEW.tax_id) THEN
-        RAISE EXCEPTION 'Invalid tax ID format for type %', NEW.tax_id_type;
+    IF NOT validate_tax_id(NEW.account_type, NEW.tax_id) THEN
+        RAISE EXCEPTION 'Invalid tax ID format for account type %', NEW.account_type;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create triggers for relevant tables
-CREATE TRIGGER validate_individual_tax_id
-    BEFORE INSERT OR UPDATE ON individual_details
+-- Create trigger for accounts table
+CREATE TRIGGER validate_account_tax_id
+    BEFORE INSERT OR UPDATE ON accounts
     FOR EACH ROW
-    EXECUTE FUNCTION validate_tax_id_trigger();
-
-CREATE TRIGGER validate_entity_tax_id
-    BEFORE INSERT OR UPDATE ON entity_details
-    FOR EACH ROW
-    EXECUTE FUNCTION validate_tax_id_trigger();
-
-CREATE TRIGGER validate_trust_tax_id
-    BEFORE INSERT OR UPDATE ON trust_details
-    FOR EACH ROW
-    EXECUTE FUNCTION validate_tax_id_trigger();
-
-CREATE TRIGGER validate_retirement_tax_id
-    BEFORE INSERT OR UPDATE ON retirement_details
-    FOR EACH ROW
-    EXECUTE FUNCTION validate_tax_id_trigger();
+    EXECUTE FUNCTION validate_account_tax_id_trigger();
 ```
 
-### **1.2 Ownership Validation**
+### **1.2 Account Type Validation**
 ```sql
-CREATE OR REPLACE FUNCTION validate_ownership_percentage(
-    parent_id UUID,
-    parent_type TEXT
-) RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION validate_account_subtype(
+    account_type TEXT,
+    account_subtype TEXT
+) RETURNS BOOLEAN AS $$
 BEGIN
-    -- Check that total ownership doesn't exceed 100%
-    IF (
-        SELECT SUM(ownership_percent)
-        FROM beneficial_owners
-        WHERE parent_id = NEW.parent_id
-        AND parent_type = NEW.parent_type
-        AND deleted_at IS NULL
-        AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
-    ) + COALESCE(NEW.ownership_percent, 0) > 100 THEN
-        RAISE EXCEPTION 'Total ownership percentage cannot exceed 100%%';
+    CASE account_type
+        WHEN 'personal' THEN
+            RETURN account_subtype IN ('individual', 'joint');
+        WHEN 'entity' THEN
+            RETURN account_subtype IN ('LLC', 'trust', 'partnership', 'corporation');
+        WHEN 'retirement' THEN
+            RETURN account_subtype IN ('IRA', '401k');
+        WHEN 'special_other' THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+    END CASE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply validation through trigger
+CREATE OR REPLACE FUNCTION validate_account_type_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NOT validate_account_subtype(NEW.account_type, NEW.account_subtype) THEN
+        RAISE EXCEPTION 'Invalid account subtype % for account type %', NEW.account_subtype, NEW.account_type;
     END IF;
-    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER check_ownership_percentage
-    BEFORE INSERT OR UPDATE ON beneficial_owners
+-- Create trigger for accounts table
+CREATE TRIGGER validate_account_type
+    BEFORE INSERT OR UPDATE ON accounts
     FOR EACH ROW
-    EXECUTE FUNCTION validate_ownership_percentage();
+    EXECUTE FUNCTION validate_account_type_trigger();
 ```
 
-### **1.3 Bank Information Validation**
+### **1.3 JSONB Field Validation**
 ```sql
-CREATE OR REPLACE FUNCTION validate_bank_info()
+CREATE OR REPLACE FUNCTION validate_account_jsonb_fields()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Validate routing number format (US)
-    IF NEW.routing_number !~ '^[0-9]{9}$' THEN
-        RAISE EXCEPTION 'Invalid routing number format';
-    END IF;
-
-    -- Validate SWIFT code format (international)
-    IF NEW.swift_code IS NOT NULL AND NEW.swift_code !~ '^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$' THEN
-        RAISE EXCEPTION 'Invalid SWIFT code format';
-    END IF;
-
-    -- Ensure only one primary account per account_id
-    IF NEW.primary_account AND EXISTS (
-        SELECT 1 
-        FROM bank_info 
-        WHERE account_id = NEW.account_id 
-        AND primary_account = true 
-        AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
-        AND deleted_at IS NULL
+    -- Validate personal_details for personal accounts
+    IF NEW.account_type = 'personal' AND (
+        NEW.personal_details IS NULL OR 
+        NOT (NEW.personal_details ? 'owners')
     ) THEN
-        RAISE EXCEPTION 'Only one primary bank account allowed per account';
+        RAISE EXCEPTION 'Personal accounts require owners information in personal_details';
+    END IF;
+
+    -- Validate entity_details for entity accounts
+    IF NEW.account_type = 'entity' AND (
+        NEW.entity_details IS NULL OR 
+        NOT (
+            NEW.entity_details ? 'formation_date' AND
+            NEW.entity_details ? 'formation_state' AND
+            NEW.entity_details ? 'formation_country'
+        )
+    ) THEN
+        RAISE EXCEPTION 'Entity accounts require formation details in entity_details';
+    END IF;
+
+    -- Validate retirement_details for retirement accounts
+    IF NEW.account_type = 'retirement' AND (
+        NEW.retirement_details IS NULL OR
+        NOT (NEW.retirement_details ? 'custodian_name')
+    ) THEN
+        RAISE EXCEPTION 'Retirement accounts require custodian information in retirement_details';
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER validate_bank_info_trigger
-    BEFORE INSERT OR UPDATE ON bank_info
+-- Create trigger for accounts table
+CREATE TRIGGER validate_account_jsonb
+    BEFORE INSERT OR UPDATE ON accounts
     FOR EACH ROW
-    EXECUTE FUNCTION validate_bank_info();
+    EXECUTE FUNCTION validate_account_jsonb_fields();
 ```
 
 ### **1.4 Date Validation**
@@ -142,12 +149,12 @@ $$ LANGUAGE plpgsql;
 
 -- Apply to relevant tables
 CREATE TRIGGER validate_entity_dates
-    BEFORE INSERT OR UPDATE ON entity_details
+    BEFORE INSERT OR UPDATE ON accounts
     FOR EACH ROW
     EXECUTE FUNCTION validate_dates();
 
 CREATE TRIGGER validate_trust_dates
-    BEFORE INSERT OR UPDATE ON trust_details
+    BEFORE INSERT OR UPDATE ON accounts
     FOR EACH ROW
     EXECUTE FUNCTION validate_dates();
 ```

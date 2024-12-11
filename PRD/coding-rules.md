@@ -91,8 +91,6 @@
    - Never use .sql() or raw queries
    - Use appropriate client based on context (server vs client)
 6. Never store sensitive data in JSONB fields:
-   - Use JSONB only for preferences, metadata, and configuration
-   - Never store PII, financial data, or auth data in JSONB
    - Always validate JSONB data structure with zod
 7. GP/LP Role Separation:
    - Always implement dual-check system for GP access (is_gp_user AND gp_role)
@@ -141,6 +139,10 @@
    - Test migrations with `db reset`
    - Run `supabase gen types` after successful migration
    - Never modify production schema directly
+8. Use CASCADE for dropping constraints and columns
+9. Handle table renames before dependent changes
+10. Drop policies explicitly before schema changes
+11. Split ALTER TABLE operations into separate statements
 
 ## Middleware
 1. Middleware MUST be in project root as `middleware.ts`
