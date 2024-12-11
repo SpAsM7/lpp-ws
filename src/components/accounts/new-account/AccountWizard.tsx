@@ -274,7 +274,7 @@ export function AccountWizard() {
       <div className="space-y-8 pb-10">
         <Card>
           <CardHeader>
-            <CardTitle>Create New Account</CardTitle>
+            <CardTitle className="text-xl font-semibold">Create New Account</CardTitle>
             <CardDescription>
               Step {stepIndex + 1} of {STEPS.length}: {STEPS[stepIndex].title}
             </CardDescription>

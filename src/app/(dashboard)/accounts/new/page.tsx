@@ -26,11 +26,6 @@ function LoadingState() {
 export default function NewAccountPage() {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Open New Account</h1>
-        <p className="text-zinc-500">Complete the form below to open a new investment account</p>
-      </div>
-
       <WizardProvider>
         <Suspense fallback={<LoadingState />}>
           <AccountWizard />
