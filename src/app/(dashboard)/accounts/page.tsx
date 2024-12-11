@@ -100,10 +100,12 @@ export default async function AccountsPage() {
           <h1 className="text-3xl font-bold mb-2">Accounts</h1>
           <p className="text-zinc-500">Manage your investment accounts</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Account
-        </Button>
+        <Link href="/accounts/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            New Account
+          </Button>
+        </Link>
       </div>
 
       {/* Accounts List */}
