@@ -11,7 +11,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { AddressForm } from "./AddressForm"
 import { Plus, Trash2 } from "lucide-react"
 
 export function PersonalDetailsForm() {
@@ -62,10 +61,10 @@ export function PersonalDetailsForm() {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Owner Information</h3>
-          {isJoint && (
+      {isJoint && (
+        <Card className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Owner Information</h3>
             <Button
               type="button"
               variant="outline"
@@ -76,71 +75,66 @@ export function PersonalDetailsForm() {
               <Plus className="h-4 w-4 mr-2" />
               Add Owner
             </Button>
-          )}
-        </div>
+          </div>
 
-        <div className="space-y-6">
-          {fields.map((field, index) => (
-            <Card key={field.id} className="p-4 border border-input">
-              <div className="grid gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name={`personal_details.owners.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Owner Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {isJoint && (
+          <div className="space-y-6">
+            {fields.map((field, index) => (
+              <Card key={field.id} className="p-4 border border-input">
+                <div className="grid gap-6 md:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name={`personal_details.owners.${index}.ownership_percentage`}
+                    name={`personal_details.owners.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ownership %</FormLabel>
+                        <FormLabel>Owner Name</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            min="0"
-                            max="100"
-                            {...field}
-                            onChange={e => field.onChange(parseFloat(e.target.value))}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  {isJoint && (
+                    <FormField
+                      control={form.control}
+                      name={`personal_details.owners.${index}.ownership_percentage`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ownership %</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={e => field.onChange(parseFloat(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+
+                {isJoint && index > 0 && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Remove Owner
+                  </Button>
                 )}
-              </div>
-
-              {isJoint && index > 0 && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="mt-4"
-                  onClick={() => remove(index)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Remove Owner
-                </Button>
-              )}
-            </Card>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Address</h3>
-        <AddressForm />
-      </Card>
+              </Card>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

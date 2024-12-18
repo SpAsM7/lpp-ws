@@ -22,7 +22,6 @@ import {
 import { Card } from "@/components/ui/card"
 import { US_STATES, COUNTRIES } from "@/lib/constants/locations"
 import type { NewAccountFormData } from "@/lib/schemas/account"
-import { AddressForm } from "./AddressForm"
 
 export function EntityDetailsForm() {
   const { control, watch, getValues } = useFormContext<NewAccountFormData>()
@@ -52,154 +51,172 @@ export function EntityDetailsForm() {
   )
 
   return (
-    <div className="grid gap-6">
-      <FormField
-        control={control}
-        name="legal_name"
-        rules={{ required: "Legal name is required" }}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Legal Name</FormLabel>
-            <FormControl>
-              <Input {...field} value={field.value || ""} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+    <div className="space-y-6">
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Entity Information</h3>
+        <div className="grid gap-6">
+          <FormField
+            control={control}
+            name="legal_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Legal Entity Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <FormField
-        control={control}
-        name="tax_id"
-        rules={{ required: "Tax ID is required" }}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Tax ID</FormLabel>
-            <FormControl>
-              <Input {...field} value={field.value || ""} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <FormField
+            control={control}
+            name="tax_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tax ID (EIN)</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <FormField
-        control={control}
-        name="entity_details.formation_date"
-        rules={{ required: "Formation date is required" }}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Formation Date</FormLabel>
-            <FormControl>
-              <Input {...field} type="date" value={field.value || ""} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <div className="grid gap-6 md:grid-cols-2">
+            <FormField
+              control={control}
+              name="entity_details.formation_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Formation Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <FormField
-          control={control}
-          name="entity_details.formation_state"
-          rules={{ required: "Formation state is required" }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Formation State</FormLabel>
-              <FormControl>
-                <Combobox
-                  options={stateOptions}
-                  value={field.value || ""}
-                  onValueChange={field.onChange}
-                  placeholder="Select state"
-                  name={field.name}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={control}
+              name="entity_details.fiscal_year_end"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fiscal Year End</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="01">January</SelectItem>
+                        <SelectItem value="02">February</SelectItem>
+                        <SelectItem value="03">March</SelectItem>
+                        <SelectItem value="04">April</SelectItem>
+                        <SelectItem value="05">May</SelectItem>
+                        <SelectItem value="06">June</SelectItem>
+                        <SelectItem value="07">July</SelectItem>
+                        <SelectItem value="08">August</SelectItem>
+                        <SelectItem value="09">September</SelectItem>
+                        <SelectItem value="10">October</SelectItem>
+                        <SelectItem value="11">November</SelectItem>
+                        <SelectItem value="12">December</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-        <FormField
-          control={control}
-          name="entity_details.formation_country"
-          rules={{ required: "Formation country is required" }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Formation Country</FormLabel>
-              <FormControl>
-                <Combobox
-                  options={countryOptions}
-                  value={field.value || ""}
-                  onValueChange={field.onChange}
-                  placeholder="Select country"
-                  name={field.name}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <FormField
+              control={control}
+              name="entity_details.formation_state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Formation State</FormLabel>
+                  <FormControl>
+                    <Combobox
+                      options={stateOptions}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select state"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <FormField
-          control={control}
-          name="entity_details.fiscal_year_end"
-          rules={{ required: "Fiscal year end is required" }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Fiscal Year End</FormLabel>
-              <FormControl>
-                <Input {...field} type="date" value={field.value || ""} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+            <FormField
+              control={control}
+              name="entity_details.formation_country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Formation Country</FormLabel>
+                  <FormControl>
+                    <Combobox
+                      options={countryOptions}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select country"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <FormField
-          control={control}
-          name="entity_details.is_privately_held"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  Privately Held
-                </FormLabel>
-              </div>
-            </FormItem>
-          )}
-        />
+          <div className="flex gap-6">
+            <FormField
+              control={control}
+              name="entity_details.is_privately_held"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Privately Held
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={control}
-          name="entity_details.is_foreign"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  Foreign Entity
-                </FormLabel>
-              </div>
-            </FormItem>
-          )}
-        />
-      </div>
+            <FormField
+              control={control}
+              name="entity_details.is_foreign"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Foreign Entity
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+      </Card>
 
       {isTrust && (
         <Card className="p-6">
@@ -207,67 +224,39 @@ export function EntityDetailsForm() {
           <div className="grid gap-6">
             <FormField
               control={control}
+              name="entity_details.entity_specific_info.trust.grantor_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Grantor Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
               name="entity_details.entity_specific_info.trust.trust_type"
-              rules={{ required: "Trust type is required" }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Trust Type</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={field.onChange}
                       value={field.value}
+                      onValueChange={field.onChange}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
+                        <SelectValue placeholder="Select trust type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="living">Living Trust</SelectItem>
-                        <SelectItem value="testamentary">Testamentary Trust</SelectItem>
-                        <SelectItem value="charitable">Charitable Trust</SelectItem>
-                        <SelectItem value="business">Business Trust</SelectItem>
+                        <SelectItem value="revocable">Revocable</SelectItem>
+                        <SelectItem value="irrevocable">Irrevocable</SelectItem>
+                        <SelectItem value="charitable">Charitable</SelectItem>
+                        <SelectItem value="testamentary">Testamentary</SelectItem>
                       </SelectContent>
                     </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="entity_details.entity_specific_info.trust.grantor_status"
-              rules={{ required: "Grantor status is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grantor Status</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="grantor trust">Grantor Trust</SelectItem>
-                        <SelectItem value="non-grantor trust">Non-Grantor Trust</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="entity_details.entity_specific_info.trust.beneficiary"
-              rules={{ required: "Beneficiary is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Primary Beneficiary</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -276,8 +265,6 @@ export function EntityDetailsForm() {
           </div>
         </Card>
       )}
-
-      <AddressForm />
     </div>
   )
 }

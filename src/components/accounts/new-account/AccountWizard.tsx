@@ -11,6 +11,7 @@ import { useWizard } from "@/lib/contexts/account-wizard"
 import { submitNewAccount } from "@/lib/actions/accounts"
 import { AccountTypeStep } from "./AccountTypeStep"
 import { AccountSubtypeStep } from "./AccountSubtypeStep"
+import { AddressStep } from "./AddressStep"
 import { PersonalDetailsForm } from "./PersonalDetailsForm"
 import { EntityDetailsForm } from "./EntityDetailsForm"
 import { RetirementDetailsForm } from "./RetirementDetailsForm"
@@ -23,6 +24,7 @@ import type { NewAccountFormData } from "@/lib/schemas/account"
 const STEPS = [
   { title: "Basic Information", description: "Let's start with some basic information about the account" },
   { title: "Account Details", description: "Please provide detailed information based on the account type" },
+  { title: "Address", description: "Please provide your address information" },
   { title: "Documents", description: "Upload required documents for account verification" },
   { title: "Review & Submit", description: "Review your information before submitting" }
 ]
@@ -103,6 +105,10 @@ export function AccountWizard() {
         break
       case "subtype":
         stepValid = !!values.account_subtype
+        break
+      case "address":
+        stepValid = !!values.address?.street1 && !!values.address?.city && 
+          !!values.address?.state && !!values.address?.postal_code && !!values.address?.country
         break
       case "details":
         if (values.account_type === "entity") {
@@ -204,6 +210,9 @@ export function AccountWizard() {
         setStep("subtype")
         break
       case "subtype":
+        setStep("address")
+        break
+      case "address":
         setStep("details")
         break
       case "details":
@@ -238,8 +247,11 @@ export function AccountWizard() {
       case "subtype":
         setStep("type")
         break
-      case "details":
+      case "address":
         setStep("subtype")
+        break
+      case "details":
+        setStep("address")
         break
       case "documents":
         setStep("details")
@@ -256,12 +268,14 @@ export function AccountWizard() {
         return 0
       case "subtype":
         return 1
-      case "details":
-        return 1
-      case "documents":
+      case "address":
         return 2
-      case "review":
+      case "details":
         return 3
+      case "documents":
+        return 3
+      case "review":
+        return 4
       default:
         return 0
     }
@@ -298,6 +312,7 @@ export function AccountWizard() {
 
               {currentStep === "type" && <AccountTypeStep />}
               {currentStep === "subtype" && <AccountSubtypeStep />}
+              {currentStep === "address" && <AddressStep />}
               {currentStep === "details" && formData?.account_type === "personal" && <PersonalDetailsForm />}
               {currentStep === "details" && formData?.account_type === "entity" && <EntityDetailsForm />}
               {currentStep === "details" && formData?.account_type === "retirement" && <RetirementDetailsForm />}
