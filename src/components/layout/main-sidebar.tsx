@@ -22,13 +22,13 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "./ui/avatar"
-import { Breadcrumbs } from "./breadcrumbs"
+} from "@/components/ui/avatar"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "./ui/collapsible"
+} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu"
 import {
   Sidebar as UISidebar,
   SidebarContent,
@@ -55,10 +55,11 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from "./ui/sidebar"
-import { Separator } from "./ui/separator"
+} from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { Dialog, DialogContent } from "./ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 const data = {

@@ -1,0 +1,87 @@
+flowchart TB
+    %% Flowchart describing key LP Portal flows
+    %% --- ACTORS & PLATFORM LAYERS ---
+    subgraph Investor[LP Investor]
+        LP[Browser User]
+    end
+    
+    subgraph WebApp[LP Portal - Next.js on Vercel]
+        direction TB
+        UI[Front-End UI Components]
+        SV[Serverless Functions]
+        subgraph Pages[Key Portal Pages]
+            Home[Home Dashboard]
+            Companies[Companies View]
+            Investments[Investments View]
+            Documents[Document Management]
+            Accounts[Account Management]
+        end
+    end
+    
+    subgraph SupabaseAuth[Supabase Authentication]
+        direction TB
+        SBLogin[Sign-up / Sign-in Flow]
+        SBReset[Password Reset Flow]
+        SBDB[(User Credentials)]
+        SBVerify[Email Verification]
+    end
+    
+    subgraph AirtableDB[Airtable - GP Administration]
+        direction TB
+        ATUsers[User_Profiles Table]
+        ATRoles[Roles Table]
+        ATDocs[Documents Table]
+        ATInvest[Investments Table]
+        ATAccounts[Accounts Table]
+        ATEvents[Events/Activities Table]
+    end
+    
+    subgraph GPAdmin[General Partners]
+        GP[GP Administrators]
+    end
+    
+    %% --- KEY FLOWS ---
+    %% Authentication Flow
+    LP -->|1. Access Portal| UI
+    UI -->|2. Auth Request| SBLogin
+    UI -->|2a. Reset Request| SBReset
+    UI -->|2b. Verify Email| SBVerify
+    SBLogin -->|3. Verify| SBDB
+    SBReset -->|3a. Reset Flow| SBDB
+    SBVerify -->|3b. Verify Flow| SBDB
+    SBLogin -->|4. JWT with UUID| UI
+    
+    %% Data Access Flow
+    Home -->|Request Data| SV
+    Companies -->|Request Data| SV
+    Investments -->|Request Data| SV
+    Documents -->|Request Data| SV
+    Accounts -->|Request Data| SV
+    
+    UI -->|5. Server Action| SV
+    SV -->|6. Verify UUID| ATUsers
+    SV -->|7. Check Roles| ATRoles
+    SV -->|8. Filter Data| ATDocs
+    SV -->|8. Filter Data| ATInvest
+    SV -->|8. Filter Data| ATAccounts
+    SV -->|9. Return Filtered| UI
+    
+    %% Activity Logging
+    SV -->|Log User Actions| ATEvents
+    
+    %% GP Management Flow
+    GP -->|Upload Documents| ATDocs
+    GP -->|Manage Users| ATUsers
+    GP -->|Assign Roles| ATRoles
+    GP -->|Track Activities| ATEvents
+    
+    %% Styling
+    classDef portal fill:#dfe7f9,stroke:#555,stroke-width:2px
+    classDef auth fill:#f3f3f3,stroke:#444,stroke-width:1px
+    classDef data fill:#f3f3f3,stroke:#444,stroke-width:1px
+    classDef actor fill:#fff,stroke:#111,stroke-width:1px
+    
+    class UI,SV,Pages,Home,Companies,Investments,Documents,Accounts portal
+    class SBLogin,SBReset,SBDB,SBVerify auth
+    class ATUsers,ATRoles,ATDocs,ATInvest,ATAccounts,ATEvents data
+    class LP,GP actor
