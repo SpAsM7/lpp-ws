@@ -478,25 +478,97 @@ All investment, document, role, and account data is kept in **Airtable**, while 
 
 ## 17. Styling & Theme
 
-1. **shadcn Theme**  
-   - Must use theme tokens (e.g. `text-primary`, `bg-accent`)  
-   - No hardcoded color strings that conflict with the theme  
+1. **Theme Configuration**
+   - MUST use shadcn's theme configuration system
+   - MUST define all theme tokens in `app/globals.css` under `@layer base`
+   - MUST extend theme through `tailwind.config.ts` not custom CSS
+   - MUST use semantic naming that describes purpose, not appearance
+   - MUST NOT override shadcn's base component styles directly
 
-2. **Component Variants**  
-   - Use `cva` from class-variance-authority for styling variants  
-   - Keep variant definitions in the component’s file  
+2. **Color Tokens**
+   - MUST use these semantic tokens for consistent theming:
+     ```
+     background/foreground: Main surfaces
+     card/card-foreground: Card-style elements
+     popover/popover-foreground: Floating elements
+     primary/primary-foreground: Primary actions
+     secondary/secondary-foreground: Secondary actions
+     muted/muted-foreground: Subtle backgrounds
+     accent/accent-foreground: Subtle interactive states
+     destructive/destructive-foreground: Destructive actions
+     border: Border colors
+     input: Form input borders
+     ring: Focus rings
+     ```
 
-3. **CSS Variables**  
-   - Use `hsl(var(--primary))` for color references  
-   - Avoid raw hex/hsl in code  
+3. **Interactive States**
+   - MUST use semantic tokens for all interactive states:
+     ```
+     hover:bg-muted hover:text-muted-foreground    // Hover
+     bg-secondary text-secondary-foreground         // Selected/Active
+     focus-visible:ring-2 focus-visible:ring-ring   // Focus
+     disabled:opacity-50                           // Disabled
+     data-[state=open]:bg-accent                  // Open/Expanded
+     ```
+   - MUST use opacity modifiers only with semantic tokens
+   - MUST NOT create custom state combinations
 
-4. **Dark Mode**  
-   - Always handle `dark:` classes; test all components in light and dark modes  
+4. **Component Styling**
+   - MUST use shadcn's class composition pattern:
+     ```tsx
+     className={cn(
+       "base-classes",
+       "state-classes",
+       conditionalClasses && "conditional-styles"
+     )}
+     ```
+   - MUST use Tailwind's built-in utilities over custom classes
+   - MUST use semantic tokens for all colors and states
+   - MUST NOT override shadcn's transition handling
+   - MUST NOT create component-specific color tokens
 
-5. **Style Inheritance**  
-   - Use `className` for overrides  
-   - Implement `forwardRef` when needed  
-   - Do not inline style large blocks unless absolutely necessary  
+5. **Dark Mode**
+   - MUST implement dark mode using class strategy
+   - MUST define both light and dark tokens in `globals.css`
+   - MUST test all components in both modes
+   - MUST use same semantic token names in both modes
+   - MUST handle dark mode in Tailwind config:
+     ```ts
+     /** @type {import('tailwindcss').Config} */
+     module.exports = {
+       darkMode: ["class"],
+       // ...
+     }
+     ```
+
+6. **CSS Variables**
+   - MUST use HSL format for all colors:
+     ```css
+     --primary: 222.2 47.4% 11.2%; /* hsl format */
+     ```
+   - MUST access variables using `hsl(var(--primary))`
+   - MUST NOT use raw color values (hex, rgb, etc.)
+   - MUST maintain parallel light/dark values for all colors
+
+7. **Responsive Design**
+   - MUST use Tailwind's breakpoint system
+   - MUST follow mobile-first approach
+   - MUST test all interactive states at each breakpoint
+   - MUST maintain consistent spacing scale
+
+8. **Animation & Transitions**
+   - MUST use shadcn's animation utilities
+   - MUST maintain consistent transition timing
+   - MUST respect user's reduced-motion preferences
+   - MUST use Tailwind's animation classes when possible
+
+9. **Style Inheritance**
+   - MUST use `className` prop for style overrides
+   - MUST use `cn()` utility for class merging
+   - MUST maintain component variant API
+   - MUST document style override patterns
+   - MUST NOT use inline styles for theming
+   - MUST NOT override shadcn's core utilities
 
 ---
 
