@@ -505,6 +505,10 @@ All investment, document, role, and account data is kept in **Airtable**, while 
 1. NEVER use placeholders like `[Previous content is the same]` or `[Existing Content]` when editing code. Always show the entire updated file or section.  
 2. Use proper version control. Changes must be explicit.  
 3. All code changes must be visible in a diff.  
+4. MUST NOT make UI changes during edits unless:
+   - The user has explicitly requested UI changes, or
+   - You have requested and received explicit permission from the user to change the UI
+   - This applies to all visual changes including layout, styling, component structure, and interaction patterns
 
 ---
 

@@ -59,7 +59,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/features/ui/utils/styles"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 const data = {
@@ -119,10 +119,20 @@ export function Sidebar({ children }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
-      router.push('/auth/login')
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to sign out');
+      }
+
+      router.push('/auth/login');
     } catch (error) {
-      console.error('Error logging out:', error)
+      console.error('Error logging out:', error);
     }
   }
 

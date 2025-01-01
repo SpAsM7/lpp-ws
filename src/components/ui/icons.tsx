@@ -1,4 +1,8 @@
+// Centralized icon components for the application
+// See: docs/coding-rules.md
+
 import {
+  AlertCircle,
   Sun,
   Moon,
   Loader2,
@@ -18,6 +22,8 @@ import {
   Heart,
   Star,
   Briefcase,
+  RefreshCcw,
+  UserPlus,
   type LucideIcon,
 } from "lucide-react"
 
@@ -43,6 +49,9 @@ export const Icons = {
   heart: Heart,
   star: Star,
   briefcase: Briefcase,
+  alertCircle: AlertCircle,
+  refreshCcw: RefreshCcw,
+  userPlus: UserPlus,
   piggyBank: (props: React.ComponentProps<"svg">) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -95,4 +104,4 @@ export const Icons = {
       />
     </svg>
   ),
-}
+} as const

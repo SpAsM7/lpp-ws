@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/features/ui/utils/styles"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/ui/icons"
 import { Card } from "@/components/ui/card"
