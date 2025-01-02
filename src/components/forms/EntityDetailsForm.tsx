@@ -21,18 +21,12 @@ import {
 } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
 import { US_STATES, COUNTRIES } from "@/lib/features/location/locations"
-import type { NewAccountFormData } from "@/lib/schemas/account"
+import type { NewAccountFormData } from "@/lib/domains/accounts/schema"
 
 export function EntityDetailsForm() {
-  const { control, watch, getValues } = useFormContext<NewAccountFormData>()
+  const { control, watch } = useFormContext<NewAccountFormData>()
   const accountSubtype = watch("account_subtype")
   const isTrust = accountSubtype === "trust"
-
-  console.log('EntityDetailsForm - Full Form Context:', JSON.stringify(getValues(), null, 2))
-  console.log('EntityDetailsForm - Account Subtype:', accountSubtype)
-  console.log('EntityDetailsForm - US_STATES:', JSON.stringify(US_STATES, null, 2))
-  console.log('EntityDetailsForm - US_STATES Type:', typeof US_STATES)
-  console.log('EntityDetailsForm - US_STATES is Array:', Array.isArray(US_STATES))
 
   const stateOptions = useMemo<ComboboxOption[]>(() => 
     US_STATES.map(state => ({
@@ -91,7 +85,7 @@ export function EntityDetailsForm() {
                 <FormItem>
                   <FormLabel>Formation Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +100,7 @@ export function EntityDetailsForm() {
                   <FormLabel>Fiscal Year End</FormLabel>
                   <FormControl>
                     <Select
-                      value={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                     >
                       <SelectTrigger>
@@ -144,7 +138,7 @@ export function EntityDetailsForm() {
                   <FormControl>
                     <Combobox
                       options={stateOptions}
-                      value={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                       placeholder="Select state"
                     />
@@ -163,7 +157,7 @@ export function EntityDetailsForm() {
                   <FormControl>
                     <Combobox
                       options={countryOptions}
-                      value={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                       placeholder="Select country"
                     />
@@ -224,12 +218,25 @@ export function EntityDetailsForm() {
           <div className="grid gap-6">
             <FormField
               control={control}
-              name="entity_details.entity_specific_info.trust.grantor_name"
+              name="entity_details.entity_specific_info.trust.trust_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Grantor Name</FormLabel>
+                  <FormLabel>Trust Type</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Select
+                      value={field.value || ""}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select trust type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="living">Living Trust</SelectItem>
+                        <SelectItem value="testamentary">Testamentary Trust</SelectItem>
+                        <SelectItem value="charitable">Charitable Trust</SelectItem>
+                        <SelectItem value="business">Business Trust</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -238,25 +245,37 @@ export function EntityDetailsForm() {
 
             <FormField
               control={control}
-              name="entity_details.entity_specific_info.trust.trust_type"
+              name="entity_details.entity_specific_info.trust.grantor_status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Trust Type</FormLabel>
+                  <FormLabel>Grantor Status</FormLabel>
                   <FormControl>
                     <Select
-                      value={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select trust type" />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="revocable">Revocable</SelectItem>
-                        <SelectItem value="irrevocable">Irrevocable</SelectItem>
-                        <SelectItem value="charitable">Charitable</SelectItem>
-                        <SelectItem value="testamentary">Testamentary</SelectItem>
+                        <SelectItem value="grantor trust">Grantor Trust</SelectItem>
+                        <SelectItem value="non-grantor trust">Non-Grantor Trust</SelectItem>
                       </SelectContent>
                     </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="entity_details.entity_specific_info.trust.beneficiary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Beneficiary</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

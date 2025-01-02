@@ -110,6 +110,18 @@ This document uses specific keywords to indicate requirement levels:
    - MUST ensure docs reflect actual implementation
    - MUST raise conflicts for user decision
 
+3. **Code Creation & Reuse**:
+   - MUST exhaustively search codebase before creating new files or functionality
+   - MUST check all logical locations where similar functionality might exist:
+     - Within existing files in related domains
+     - In shared utility functions
+     - In components with similar purposes
+   - MUST NOT assume code location based on ideal architecture
+   - MUST verify no existing implementation before creating new one
+   - MUST document search process when proposing new code
+   - MUST extend existing code when similar functionality exists
+   - MUST consolidate duplicate functionality when found
+
 ---
 
 ## 5. Project Structure Overview

@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { US_STATES, COUNTRIES } from "@/lib/features/location/locations"
-import type { NewAccountFormData } from "@/lib/schemas/account"
+import type { NewAccountFormData } from "@/lib/domains/accounts/schema"
 
 export function AddressForm() {
   const { control } = useFormContext<NewAccountFormData>()
