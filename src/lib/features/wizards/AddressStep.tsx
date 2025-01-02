@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AddressForm } from "./AddressForm"
+import { AddressForm } from "@/components/forms/AddressForm"
 
 export function AddressStep() {
   return (

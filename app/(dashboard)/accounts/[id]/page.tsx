@@ -1,30 +1,30 @@
-import { Suspense } from "react";
-import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { AccountDetails } from "@/components/accounts/details/account-details";
-import { AccountTeam } from "@/components/accounts/details/account-team";
-import { createClient } from "@/lib/supabase/server";
-import type { Account } from "@/types/account";
+import { Suspense } from "react"
+import { notFound } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { AccountDetails } from "./_components/account-details"
+import { AccountTeam } from "./_components/account-team"
+import { createClient } from "@/lib/supabase/server"
+import type { Account } from "@/types/account"
 
 interface AccountPageProps {
   params: {
-    id: string;
-  };
+    id: string
+  }
 }
 
 export default async function AccountPage({ params }: AccountPageProps) {
-  const supabase = createClient();
+  const supabase = createClient()
 
   // TODO: Implement actual data fetching
   // const { data: account, error } = await supabase
   //   .from('accounts')
   //   .select('*')
   //   .eq('id', params.id)
-  //   .single();
+  //   .single()
 
   // if (error) {
-  //   console.error('Error fetching account:', error);
-  //   return notFound();
+  //   console.error('Error fetching account:', error)
+  //   return notFound()
   // }
 
   // Temporary mock data
@@ -34,9 +34,9 @@ export default async function AccountPage({ params }: AccountPageProps) {
     type: "Trust Account",
     status: "Active",
     lastActivity: new Date().toISOString()
-  };
+  }
 
-  if (!account) return notFound();
+  if (!account) return notFound()
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -67,5 +67,5 @@ export default async function AccountPage({ params }: AccountPageProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -20,7 +20,7 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
-import { US_STATES, COUNTRIES } from "@/lib/constants/locations"
+import { US_STATES, COUNTRIES } from "@/lib/features/location/locations"
 import type { NewAccountFormData } from "@/lib/schemas/account"
 
 export function EntityDetailsForm() {

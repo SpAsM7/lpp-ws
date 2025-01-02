@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
-import { US_STATES, COUNTRIES } from "@/lib/constants/locations"
+import { US_STATES, COUNTRIES } from "@/lib/features/location/locations"
 import type { NewAccountFormData } from "@/lib/schemas/account"
 
 export function AddressForm() {

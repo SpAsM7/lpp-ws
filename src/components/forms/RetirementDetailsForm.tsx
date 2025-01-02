@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { AddressForm } from "./AddressForm"
+import { AddressForm } from "@/components/forms/AddressForm"
 
 export function RetirementDetailsForm() {
   const form = useFormContext()
