@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Alert } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,7 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function LoginForm({ className, ...props }: UserAuthFormProps) {
   const { toast } = useToast()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const {
@@ -58,6 +60,8 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
         description: "You have been signed in successfully.",
         variant: "success",
       })
+
+      router.push('/home')
     } catch (error) {
       console.error("Error signing in:", error)
       toast({
