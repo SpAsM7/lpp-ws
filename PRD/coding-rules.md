@@ -1,5 +1,11 @@
 # Absolute Code Rules
 
+This document uses specific keywords to indicate requirement levels:
+
+- **MUST / MUST NOT**: Absolute requirements that cannot be ignored. **Failure to comply with a MUST or MUST NOT will result in immediate rejection of the merge or build.**
+- **SHOULD / SHOULD NOT**: Strong recommendations that can be deviated from only if fully understood  
+- **MAY**: Optional items  
+
 ## 1. Tech Stack & Overview
 
 This project is a Next.js-based LP Portal that provides limited partners with a secure interface for viewing and managing investment data, documents, and updates. Our data source is **Airtable** (where GPs store and manage records), and user authentication is handled by **Supabase**.
@@ -21,10 +27,6 @@ This project is a Next.js-based LP Portal that provides limited partners with a 
    - Vercel for Frontend & Serverless Functions  
    - Airtable as primary DB (via its API/SDK)  
    - Supabase Cloud for Authentication  
-   - MUST use `.env` for local development  
-   - MUST use `.env.example` for documenting variables  
-   - MUST prefix client-side variables with `NEXT_PUBLIC_`  
-   - MUST NEVER commit `.env` to version control
 
 4. **Additional Libraries**  
    - React Hook Form & Zod for form handling  
@@ -35,96 +37,136 @@ This project is a Next.js-based LP Portal that provides limited partners with a 
 
 ---
 
-## 2. Environment Variables
+## 3. Workflow Laws
 
-1. **File Usage**  
-   - MUST use `.env.local` for local development  
-   - MUST use `.env.example` for documenting **all** variables  
-   - MUST NEVER commit `.env.local` or other `.env.*` files  
-   - MUST keep `.env.example` up to date with every required variable  
+### Law #0: AlwaysFollow the Rules
 
-2. **Variable Naming**  
-   - MUST prefix client-side variables with `NEXT_PUBLIC_`  
-   - MUST use SCREAMING_SNAKE_CASE for all variables  
-   - MUST prefix feature flags with `FEATURE_` (e.g. `FEATURE_SOMETHING_EXPERIMENTAL`)  
+When making changes, **MUST** follow these sections based on the type of change:
 
-3. **Security**  
-   - MUST store credentials such as the **Airtable API key** and **Supabase keys** in environment variables  
-   - MUST NEVER expose sensitive values in client-side code  
-   - MUST NEVER log environment variables  
-   - MUST validate all required environment variables on startup  
+1. **UI Changes**
+   - **MUST** follow Section 16 (Styling & Theme) for all styling decisions
+   - **MUST** follow Section 12 (Components) for component architecture
+   - **MUST** follow Section 7 (Loading States) for loading states
+   - **MUST** follow Section 14 (Error Handling) for error states
 
----
+2. **Data & Backend**
+   - **MUST** follow Section 9 (Data Management) for all Airtable operations
+   - **MUST** follow Section 10 (Schema Management) for schema changes
+   - **MUST** follow Section 13 (Server-Side Logic) for server actions
+   - **MUST** follow Section 17 (Environment Variables) for configuration
 
-## 3. Rule Conventions
+3. **Authentication**
+   - **MUST** follow Section 8 (Authentication) for all auth flows
+   - **MUST** follow Section 11 (Middleware) for route protection
+   - **MUST** follow Section 6 (Route Structure) for auth endpoints
 
-This document uses specific keywords to indicate requirement levels:
+4. **Project Organization**
+   **MUST** follow:
+   - Section 4 for file placement
+   - Section 5 for naming & formatting
+   - Section 15 for dependencies
 
-- **MUST / MUST NOT**: Absolute requirements that cannot be ignored  
-- **SHOULD / SHOULD NOT**: Strong recommendations that can be deviated from only if fully understood  
-- **MAY**: Optional items  
+5. **Testing & Quality**
+   - **MUST** follow Section 18 (Testing) for test implementation
+   - **MUST** follow Section 14 (Error Handling) for error cases and recovery paths
+   - **MUST** document according to Law #3 (Documentation)
+   - **MUST** ensure both test coverage and error handling are complete before marking work as done
 
----
+Remember:
+- **MUST** check these sections BEFORE making changes
+- **MUST** follow ALL relevant sections (changes often cross multiple concerns)
+- **MUST** prioritize sections specific to your change type
+- When in doubt, **MUST** ask for clarification
 
-## 4. Development Workflow
+### Law #1: Verify & Reuse Existing Code Before Creating New Code
 
-### 4.1 Airtable & Supabase Management
+1. **Search Before Implementing**  
+   - **MUST** check the entire codebase (domains, shared utilities, components) for existing functionality **before** writing anything new.  
+   - **MUST** confirm no similar logic or pattern already exists.
 
-1. **Schema Changes**:
-   - MUST be performed manually by user in Airtable UI
-   - MUST NOT attempt direct schema modifications via code
-   - MUST wait for user confirmation before implementing dependent code
-   - MUST prompt user with specific changes needed:
-     - For Airtable: exact field names, types, and configurations
-     - For Supabase: complete SQL statements for schema changes
-   - MUST include examples in change requests (e.g., "Please add `Document_Type` field as Single Select to Documents table with options: ['K1', 'Statement', 'Report']")
+2. **Unify & Extend**  
+   - **MUST** **extend or reuse** an existing solution if found, rather than creating a duplicate.  
+   - **MUST** unify duplicates if they appear. Avoid parallel code paths that solve the same problem.
 
-2. **Auth Configuration**:
-   - MUST be configured manually by user in Supabase dashboard
-   - MUST NOT modify auth settings programmatically
-   - MUST document required auth provider changes
+3. **Document the Decision**  
+   - **MUST** briefly explain your search or rationale (e.g., in pull requests, commit messages):  
+     - “Searched `/src/lib/domains/accounts` and `/src/components/accounts`… no matching function found. Creating new `createAccountAction`.”  
 
-### 4.2 Documentation Requirements
+### Law #2: Manage Airtable & Supabase Config Manually
 
-1. **Reference Files**:
-   - MUST maintain `/PRD/product-requirements.md` for feature scope, update when new features are added
-   - MUST maintain `/PRD/component-requirements.md` for implementation details, update when components are changed and track when existing components are completed
-   - MUST maintain `/PRD/app-flow.mermaid` for flow documentation, update when flows are added or changed
-   - MUST maintain `/PRD/working-status.md` for progress tracking, update at each logical step of the project
+1. **Manual Schema & Auth**  
+   - **MUST** perform all Airtable field/table modifications in the Airtable UI.  
+   - **MUST** configure Supabase auth settings in the Supabase dashboard.  
+   - **MUST NOT** attempt programmatic schema changes or direct system-level edits.
 
-2. **Documentation Updates**:
-   - MUST update docs when implementing new features
-   - MUST update docs when modifying existing features
-   - MUST NOT introduce conflicting requirements
+2. **Prompt & Wait for Approval**  
+   - **MUST** propose exact field names, types, or configurations when code needs new schema.  
+   - **MUST** wait for **explicit** user confirmation before implementing code dependent on those changes.
 
-### 4.3 Implementation Process
+### Law #3: Maintain Documentation in Step with Development
 
-1. **Schema Coordination**:
-   - MUST request Airtable changes before dependent code
-   - MUST specify exact field names and types
-   - MUST wait for confirmation before proceeding
+1. **What to Update**  
+   - **Key Reference Files**:
+     - `product-requirements.md` – Update when **new features** are added or **existing features** are significantly changed
+     - `component-requirements.md` – Update when a **component** is added, modified, or completed
+     - `app-flow.mermaid` – Update if a **new flow** is introduced or an **existing flow** changes significantly
+     - `working-status.md` – Update at each **logical development step** (starting a feature, finishing a sub-feature, discovering new tasks)
+   - **Code Documentation**: Follow Section 5.6 (Documentation) for all code documentation requirements, including:
+     - File headers and purpose statements
+     - Function and method documentation
+     - Type and interface documentation
+     - Comments and inline documentation
 
-2. **Feature Implementation**:
-   - MUST check component requirements before coding
-   - MUST update working status during development
-   - MUST ensure docs reflect actual implementation
-   - MUST raise conflicts for user decision
+2. **How & When to Update**  
+   - **Consistency**:
+     - **MUST NOT** introduce contradictory statements in any doc
+     - **MUST** flag conflicts for user clarification **immediately**
+     - **MUST** keep comments minimal and meaningful
+     - **MUST** update documentation when functionality changes
+   - **Timing**:
+     - **MUST** update relevant docs **before** finalizing a merge/pull request
+     - **SHOULD** revise docs if bug fixes alter documented behavior
+     - **MUST** document changes as they happen, not after the fact
+     - **MUST** update all affected documentation when making changes
 
-3. **Code Creation & Reuse**:
-   - MUST exhaustively search codebase before creating new files or functionality
-   - MUST check all logical locations where similar functionality might exist:
-     - Within existing files in related domains
-     - In shared utility functions
-     - In components with similar purposes
-   - MUST NOT assume code location based on ideal architecture
-   - MUST verify no existing implementation before creating new one
-   - MUST document search process when proposing new code
-   - MUST extend existing code when similar functionality exists
-   - MUST consolidate duplicate functionality when found
+### Law #4: Follow Requirements, Stay on Task, & Seek Approvals
 
----
+1. **Check Requirements First**  
+   - **MUST** consult `component-requirements.md` and `product-requirements.md` **before** coding.  
+   - If something is unclear or missing, **MUST** ask the user for a decision instead of guessing.
 
-## 5. Project Structure Overview
+2. **Stay on Task**  
+   - **MUST** focus on resolving the **current** issue or error.  
+   - If unrelated problems or improvement ideas are uncovered, **MUST** add them as notes to `working-status.md`.  
+   - **MUST NOT** derail the current task to pursue those side issues. Wait for user approval or instructions to address them next.
+
+3. **Restrict Off-Task UI Changes**
+   - **MUST NOT** make UI changes during edits unless:
+     - The user has explicitly requested UI changes, or
+     - You have requested and received explicit permission from the user to change the UI
+   - This applies to all visual changes including layout, styling, component structure, and interaction patterns
+
+4. **Implementation & Approvals**  
+   - **MUST** reflect actual changes in `working-status.md` as you progress (e.g., "Fixed Issue #123, awaiting user review")
+   - **MUST** pause immediately and prompt the user for guidance if a conflict, unclear requirement, or unexpected scenario arises
+   - **MUST NOT** attempt to fix or modify code outside the original scope while waiting for feedback
+   - **MUST** document the specific issue or question that caused the pause in `working-status.md`
+
+### Law #5: Deliver Features in Small, Verified Steps
+
+1. **Incremental Bites**  
+   - **MUST** implement new features or fixes as small, self-contained changes aligned with the relevant requirement item (e.g., "Implementing 7.1.2 Document Search UI").  
+   - Avoid massive multi-feature merges that confuse the review process.
+
+2. **Blockers & Dependencies**  
+   - **MUST** request or confirm Airtable/Supabase changes (Law #2) **before** coding dependent features.  
+   - If a blocking dependency arises (e.g., a schema field is missing), **MUST** document it in `working-status.md` and pause until resolved.
+
+3. **Testing & Verification**  
+   - **MUST** test each small change to ensure it meets the requirement (UI correctness, data filters, or permissions).  
+   - **SHOULD** gather quick user feedback (if possible) before proceeding to the next chunk.
+
+## 4. Project Structure Overview
 
 ```
 /
@@ -135,9 +177,9 @@ This document uses specific keywords to indicate requirement levels:
 │   │   └── _components/   # Components used ONLY by dashboard pages
 │   └── api/               # API routes (auth endpoints, webhooks, etc.)
 ├── src/
-│   ├── lib/               # Shared code and business logic
-│   │   ├── domains/       # Core business domains (accounts, companies, investments)
-│   │   ├── features/      # Cross-domain features (document-access, metrics)
+│   ├── lib/               # Shared code and business logic - ALL shared code MUST go here
+│   │   ├── domains/       # Core business domains (accounts, companies, investments) - domain-specific logic MUST go here
+│   │   ├── features/      # Cross-domain features (document-access, metrics) - cross-domain logic MUST go here
 │   │   ├── actions/       # Server Actions organized by feature or domain
 │   │   ├── errors/        # Centralized error dictionary
 │   │   ├── airtable/      # Airtable queries and utilities
@@ -151,32 +193,49 @@ This document uses specific keywords to indicate requirement levels:
 │   │   ├── providers/     # Context providers
 │   │   ├── [domain]/      # Components shared within a domain (e.g., accounts/)
 │   │   └── [feature]/     # Components shared within a feature
-│   └── types/             # Shared TypeScript types
+│   └── types/             # Shared TypeScript types - ALL shared types MUST go here
 ├── tests/                 # Tests (unit in __tests__, e2e in e2e/)
 ├── public/                # Static assets
 ├── .env.example           # Environment variable documentation
 └── middleware.ts          # Edge middleware for authentication
 ```
 
-1. All shared code MUST go in `/src/lib`  
-2. All shared types MUST go in `/src/types`  
-3. All environment variables MUST be defined in `.env.example`  
-4. MUST use absolute imports from `@/` not relative paths  
-5. MUST NOT put business logic in components  
-6. **Business Logic Organization**  
-   - Core domains MUST be placed in `/src/lib/domains/[domain]`  
-     - e.g. accounts, companies, investments, documents  
-   - Features that cross multiple domains MUST be placed in `/src/lib/features/[feature]`  
-7. **File Size Management**  
-   - Each file SHOULD be under 300 lines of code  
-   - SHOULD split large modules into smaller logical pieces  
-8. **File Documentation**  
-   - Each file MUST begin with a short comment summarizing its purpose  
-   - MUST list key exports (e.g. `// Exports: MyComponent, useMyHook, MyType`)  
-   - MUST reference these rules (e.g. `// See: docs/coding-rules.md`)  
-   - MUST keep descriptions concise and focused  
+## 5. Code Style
 
----
+1. **Directory Names**: use lowercase with dashes (e.g. `user-management`)  
+2. **Exports**: prefer named exports over default exports  
+3. **Order** in files: top-level exports → subcomponents → helpers → static content → types  
+4. **Conditionals**: omit curly braces for single-line if statements  
+5. **Variable Names**: must be descriptive, especially booleans (`isLoading`, `hasError`)  
+6. **Documentation**:
+   - **Files**: Follow requirements in Law #3.4 (File-Level Documentation)
+   - **Functions & Methods**:
+     - MUST have a brief JSDoc comment explaining purpose and behavior
+     - MUST document parameters and return types with TypeScript
+     - MUST include example usage for complex functions
+     - MUST document side effects (e.g., API calls, state changes)
+     - MUST explain any non-obvious logic or business rules
+   - **Interfaces & Types**:
+     - MUST document each property with JSDoc comments
+     - MUST explain constraints and valid values
+     - MUST reference related types or interfaces
+   - **Comments**:
+     - MUST explain "why" not "what" (code should be self-documenting)
+     - MUST keep inline comments minimal and meaningful
+     - MUST update comments when code changes
+     - MUST NOT commit commented-out code
+7. **File Size & Organization**:
+   - Each file SHOULD be under 300 lines of code
+   - SHOULD split large modules into smaller logical pieces
+   - MUST extract reusable logic into separate files
+   - MUST group related functionality together
+
+8. **Import & Module Organization**:
+   - MUST use absolute imports from `@/` not relative paths
+   - MUST NOT put business logic in components
+   - MUST keep business logic in appropriate domain or feature directories
+   - MUST use barrel exports (`index.ts`) for public module APIs
+   - MUST use explicit imports (no `import *`)
 
 ## 6. Route Structure
 
@@ -194,8 +253,6 @@ This document uses specific keywords to indicate requirement levels:
 8. MUST use App Router in `/app` - MUST NOT use the legacy Pages Router  
 9. Route groups SHOULD NOT be nested more than two levels deep  
 
----
-
 ## 7. Loading States
 
 1. MUST wrap client components in Suspense boundaries  
@@ -203,8 +260,6 @@ This document uses specific keywords to indicate requirement levels:
 3. MUST use route-specific `loading.tsx` for page-level loading states  
 4. SHOULD co-locate component-specific loading states with their components  
 5. MUST place reusable loading components in `/src/components/loading`  
-
----
 
 ## 8. Authentication
 
@@ -237,8 +292,6 @@ We rely on **Supabase** exclusively for user sign-up, log-in, and password reset
 4. Always handle auth state changes through proper session management  
 5. Protected routes MUST be handled in `middleware.ts`  
 6. Never store auth tokens or user data in localStorage/client state  
-
----
 
 ## 9. Data Management (Airtable)
 
@@ -330,16 +383,12 @@ All investment, document, role, and account data is kept in **Airtable**, while 
    - MUST coordinate with GP administrators
    - MUST provide migration guides when needed
 
----
-
 ## 11. Middleware
 
 1. MUST exist in `middleware.ts` at project root  
 2. Use `createServerClient()` from `@supabase/ssr` to handle authentication in middleware  
 3. Must ensure a user is authenticated (if route requires login) before allowing access  
 4. DO NOT add application logic in page or API route files for restricting access—enforce in middleware + serverless checks  
-
----
 
 ## 12. Components
 
@@ -391,8 +440,6 @@ All investment, document, role, and account data is kept in **Airtable**, while 
    - MUST pass data through props from server components
    - MUST use Server Actions for mutations
 
----
-
 ## 13. Server-Side Logic
 
 1. **Data Mutations**:
@@ -431,8 +478,6 @@ All investment, document, role, and account data is kept in **Airtable**, while 
    - MUST log detailed errors server-side
    - MUST return user-friendly messages
 
----
-
 ## 14. Error Handling
 
 1. **Error Boundaries**:
@@ -456,8 +501,6 @@ All investment, document, role, and account data is kept in **Airtable**, while 
    - MUST provide recovery paths where possible
    - MUST handle all possible error states with appropriate messages
 
----
-
 ## 15. Dependencies/Packages
 
 1. **Airtable**  
@@ -476,75 +519,58 @@ All investment, document, role, and account data is kept in **Airtable**, while 
    - Keep dependencies updated to patch versions for security  
    - MUST remove any unused dependencies  
 
----
+## 16. Styling & Theme
 
-## 16. Code Style
+1. **Theme Configuration**  
+   - **MUST** use shadcn's theme configuration system.  
+   - **MUST** define all theme tokens in `app/globals.css` under `@layer base`, or in `tailwind.config.ts` using the `extend` property.  
+   - **MUST** keep naming **semantic** (describing purpose) rather than purely visual (e.g., `--primary`, not `--blue500`).  
+   - **MUST NOT** override shadcn's **base** component styles directly (e.g., by editing their source files).  
+   - **SHOULD** define **additional** tokens or custom colors in **Tailwind's** theme (under `extend.colors`) if truly needed, rather than ad hoc custom CSS.
 
-1. **Directory Names**: use lowercase with dashes (e.g. `user-management`)  
-2. **Exports**: prefer named exports over default exports  
-3. **Order** in files: top-level exports → subcomponents → helpers → static content → types  
-4. **Conditionals**: omit curly braces for single-line if statements  
-5. **Variable Names**: must be descriptive, especially booleans (`isLoading`, `hasError`)  
-
----
-
-## 17. Styling & Theme
-
-1. **Theme Configuration**
-   - MUST use shadcn's theme configuration system
-   - MUST define all theme tokens in `app/globals.css` under `@layer base`
-   - MUST extend theme through `tailwind.config.ts` not custom CSS
-   - MUST use semantic naming that describes purpose, not appearance
-   - MUST NOT override shadcn's base component styles directly
-
-2. **Color Tokens**
-   - MUST use these semantic tokens for consistent theming:
+2. **Color Tokens**  
+   - **MUST** rely on these semantic tokens for consistent theming:
      ```
-     background/foreground: Main surfaces
-     card/card-foreground: Card-style elements
-     popover/popover-foreground: Floating elements
-     primary/primary-foreground: Primary actions
-     secondary/secondary-foreground: Secondary actions
-     muted/muted-foreground: Subtle backgrounds
-     accent/accent-foreground: Subtle interactive states
-     destructive/destructive-foreground: Destructive actions
-     border: Border colors
-     input: Form input borders
-     ring: Focus rings
+     background / foreground
+     card / card-foreground
+     popover / popover-foreground
+     primary / primary-foreground
+     secondary / secondary-foreground
+     muted / muted-foreground
+     accent / accent-foreground
+     destructive / destructive-foreground
+     border
+     input
+     ring
      ```
+   - **MUST** avoid raw color variables (hex, rgb, etc.) in components.  
+   - **MUST** define any new tokens in `tailwind.config.ts` or as CSS variables (in HSL) following the same naming pattern (e.g., `--custom-brand`).
 
-3. **Interactive States**
-   - MUST use semantic tokens for all interactive states:
+3. **Interactive States**  
+   - **MUST** use **semantic tokens** plus Tailwind states for hover, focus, active, disabled, etc. For example:
+     ```css
+     hover:bg-muted hover:text-muted-foreground
+     focus-visible:ring-2 focus-visible:ring-ring
+     disabled:opacity-50
+     data-[state=open]:bg-accent
      ```
-     hover:bg-muted hover:text-muted-foreground    // Hover
-     bg-secondary text-secondary-foreground         // Selected/Active
-     focus-visible:ring-2 focus-visible:ring-ring   // Focus
-     disabled:opacity-50                           // Disabled
-     data-[state=open]:bg-accent                  // Open/Expanded
-     ```
-   - MUST use opacity modifiers only with semantic tokens
-   - MUST NOT create custom state combinations
+   - **MUST** use **opacity modifiers** only on semantic tokens (e.g. `bg-primary/80`).  
+   - **MUST NOT** create new custom states or combine tokens in conflicting ways.
 
-4. **Component Styling**
-   - MUST use shadcn's class composition pattern:
+4. **Component Styling**  
+   - **MUST** use the **shadcn** composition pattern with:
      ```tsx
      className={cn(
        "base-classes",
-       "state-classes",
-       conditionalClasses && "conditional-styles"
+       condition && "conditional-classes"
      )}
      ```
-   - MUST use Tailwind's built-in utilities over custom classes
-   - MUST use semantic tokens for all colors and states
-   - MUST NOT override shadcn's transition handling
-   - MUST NOT create component-specific color tokens
+   - **MUST** rely on **Tailwind utilities** (spacing, flex, grid, etc.) instead of writing standalone CSS whenever possible.  
+   - **MUST NOT** override shadcn transitions or animations by default—extend via composition if absolutely needed.  
+   - **MUST NOT** create one-off color tokens (e.g., `--my-button-bg`); use existing tokens or properly extend the theme.
 
-5. **Dark Mode**
-   - MUST implement dark mode using class strategy
-   - MUST define both light and dark tokens in `globals.css`
-   - MUST test all components in both modes
-   - MUST use same semantic token names in both modes
-   - MUST handle dark mode in Tailwind config:
+5. **Dark Mode**  
+   - **MUST** implement dark mode using Tailwind's class strategy:
      ```ts
      /** @type {import('tailwindcss').Config} */
      module.exports = {
@@ -552,51 +578,68 @@ All investment, document, role, and account data is kept in **Airtable**, while 
        // ...
      }
      ```
+   - **MUST** define parallel light/dark tokens in `globals.css` (e.g., `--primary: 222.2 47.4% 11.2%` for light mode and another HSL value for dark mode).  
+   - **MUST** test all components in both modes.  
+   - **MUST** maintain the **same** semantic token names for both light and dark.  
 
-6. **CSS Variables**
-   - MUST use HSL format for all colors:
-     ```css
-     --primary: 222.2 47.4% 11.2%; /* hsl format */
-     ```
-   - MUST access variables using `hsl(var(--primary))`
-   - MUST NOT use raw color values (hex, rgb, etc.)
-   - MUST maintain parallel light/dark values for all colors
+6. **CSS Variables**  
+   - **MUST** store color values in HSL format (e.g., `--primary: 222.2 47.4% 11.2%`).  
+   - **MUST** reference them via `hsl(var(--primary))`.  
+   - **MUST NOT** use raw color values directly in components.  
+   - **MUST** keep **matching** variable naming for light/dark modes (same property names, different HSL values).
 
-7. **Responsive Design**
-   - MUST use Tailwind's breakpoint system
-   - MUST follow mobile-first approach
-   - MUST test all interactive states at each breakpoint
-   - MUST maintain consistent spacing scale
+7. **Responsive Design**  
+   - **MUST** use Tailwind's breakpoint system (`sm:`, `md:`, `lg:`, etc.).  
+   - **SHOULD** design **mobile-first**, layering on styles for larger screens.  
+   - **MUST** test all interactive states across breakpoints (e.g., hover might not apply on mobile).  
+   - **MUST** maintain consistent spacing scales across breakpoints.
 
-8. **Animation & Transitions**
-   - MUST use shadcn's animation utilities
-   - MUST maintain consistent transition timing
-   - MUST respect user's reduced-motion preferences
-   - MUST use Tailwind's animation classes when possible
+8. **Animation & Transitions**  
+   - **MUST** use shadcn's **predefined** animations or Tailwind's built-in `animate-*` classes.  
+   - **MUST** respect user preferences for reduced motion (`prefers-reduced-motion`).  
+   - **SHOULD** maintain consistent transition durations and easing.  
+   - **MUST** avoid random or excessive animations that conflict with the minimal UI approach.
 
-9. **Style Inheritance**
-   - MUST use `className` prop for style overrides
-   - MUST use `cn()` utility for class merging
-   - MUST maintain component variant API
-   - MUST document style override patterns
-   - MUST NOT use inline styles for theming
-   - MUST NOT override shadcn's core utilities
+9. **Style Inheritance & Overrides**  
+   - **MUST** use a `className` prop with `cn()` to override or extend styles.  
+   - **MUST** rely on each component's **variant API** (e.g., `size`, `variant`) for consistent adjustments.  
+   - **MUST** document style overrides if they significantly alter the design.  
+   - **MUST NOT** override shadcn's internal classes ad hoc or by editing source files directly.
 
----
+10. **Additional Suggestions**  
+    - **Consistent Typography**  
+      - **SHOULD** define a **type scale** (e.g., `--font-size-sm`, `--font-size-base`, `--font-size-lg`) in `globals.css` or `tailwind.config.ts` for uniform sizing.  
+      - **MUST** use **semantic naming** for headings and body text (e.g., `.text-title`, `.text-body`) if adding custom classes.
 
-## 18. Code Editing & Content Preservation
+    - **Limit "One-Off" Customizations**  
+      - **MUST** strive to use existing utility classes and tokens in all new components.  
+      - **MUST** unify repeated style patterns (e.g., if multiple cards share a style, create a `card` variant).
 
-1. NEVER use placeholders like `[Previous content is the same]` or `[Existing Content]` when editing code. Always show the entire updated file or section.  
-2. Use proper version control. Changes must be explicit.  
-3. All code changes must be visible in a diff.  
-4. MUST NOT make UI changes during edits unless:
-   - The user has explicitly requested UI changes, or
-   - You have requested and received explicit permission from the user to change the UI
-   - This applies to all visual changes including layout, styling, component structure, and interaction patterns
+    - **Document Extensions**  
+      - **SHOULD** update or maintain a short **theming reference doc** whenever new tokens or styles are added (e.g., `docs/theming.md`).  
+      - **MUST** clarify **why** each new token exists (business need, brand requirement, etc.) so future developers (and Cursor) don't introduce duplicates.
 
----
+## 17. Environment Variables
 
-## 19. Testing
+1. **File Usage**  
+   - MUST use `.env.local` for local development  
+   - MUST use `.env.example` for documenting **all** variables  
+   - MUST NEVER commit `.env.local` or other `.env.*` files  
+   - MUST keep `.env.example` up to date with every required variable  
+   - MUST define ALL environment variables in `.env.example`
+
+2. **Variable Naming**  
+   - MUST prefix client-side variables with `NEXT_PUBLIC_`  
+   - MUST use SCREAMING_SNAKE_CASE for all variables  
+   - MUST prefix feature flags with `FEATURE_` (e.g. `FEATURE_SOMETHING_EXPERIMENTAL`)  
+
+3. **Security**  
+   - MUST store credentials such as the **Airtable API key** and **Supabase keys** in environment variables  
+   - MUST NEVER expose sensitive values in client-side code  
+   - MUST NEVER log environment variables  
+   - MUST validate all required environment variables on startup  
+
+## 18. Testing
 
 1. **Test Location**  
    - Co-locate feature tests with the code in `__tests__` subdirectories  

@@ -1,5 +1,5 @@
 import { createRouteHandlerClient } from "@/lib/supabase/server";
-import { signUpSchema } from "@/lib/validations/auth";
+import { signUpSchema } from "@/lib/supabase/auth/validations";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
