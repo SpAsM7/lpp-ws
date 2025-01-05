@@ -356,14 +356,14 @@ export function Sidebar({ children }: SidebarProps) {
           <SidebarRail />
         </UISidebar>
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <header className="fixed top-0 right-0 left-[var(--sidebar-width)] z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b transition-[width,height,left] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 group-has-[[data-collapsible=icon]]/sidebar-wrapper:left-[var(--sidebar-width-icon)]">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumbs />
             </div>
           </header>
-          <div className="p-4">
+          <div className="mt-16 p-4">
             {children}
           </div>
         </SidebarInset>
