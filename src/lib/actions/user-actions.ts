@@ -1,58 +1,102 @@
 'use server'
 
-import { queryTable } from '@/lib/airtable/client';
+import { scanUsers, AirtableError } from '@/lib/airtable/client';
+import { userProfileSchema, type UserActionResponse, type NormalizedUserProfile } from '@/types/user';
+import { logger } from '@/lib/logger';
 
-// Users table ID from Airtable
-const USERS_TABLE_ID = 'tblEyO6PHeFXuxq4F';
+// Users table name from Airtable
+const USERS_TABLE_ID = 'Users';  // Table names are case-sensitive in Airtable
 
-export async function getUserBySupabaseId(supabaseId: string) {
+/**
+ * Fetches a user's profile from Airtable using their Supabase ID
+ * @param supabaseId - The user's Supabase auth ID
+ * @returns Promise<UserActionResponse<NormalizedUserProfile>> - The normalized user profile or error
+ */
+export async function getUserBySupabaseId(
+  supabaseId: string
+): Promise<UserActionResponse<NormalizedUserProfile>> {
   if (!supabaseId) {
-    console.error('No Supabase ID provided');
-    return null;
+    logger.error('getUserBySupabaseId.validation.error', {
+      error: 'No Supabase ID provided',
+      supabaseId
+    });
+    return {
+      error: 'No Supabase ID provided',
+      isSuccess: false
+    };
   }
 
-  console.log('Fetching user with Supabase ID:', supabaseId);
-  
   try {
+    logger.info('getUserBySupabaseId.fetch.start', { supabaseId });
+    
     // Query users table with a filter for the specific user_id
-    const users = await queryTable(USERS_TABLE_ID, {
-      filterByFormula: `{user_id} = '${supabaseId}'`,
-      maxRecords: 1,
-      fields: ['id', 'name_first', 'name_last', 'email', 'user_id']
+    const users = await scanUsers(
+      `{user_id} = '${supabaseId}'`,
+      1
+    );
+    
+    logger.debug('getUserBySupabaseId.fetch.response', { 
+      supabaseId,
+      recordCount: users?.length ?? 0 
     });
     
-    console.log('Query completed. Raw response:', users);
-    
-    if (!users || !users.length) {
-      console.log('No user found with Supabase ID:', supabaseId);
-      return null;
+    if (!users || users.length === 0) {
+      logger.warn('getUserBySupabaseId.fetch.notFound', { supabaseId });
+      return {
+        error: 'User not found',
+        isSuccess: false
+      };
     }
 
-    const user = users[0].fields;
-    console.log('Raw user data:', user);
-    
-    if (!user.name_first || !user.name_last) {
-      console.error('User data is missing required fields:', user);
-      return null;
-    }
-
-    // Return a normalized user object
-    const normalizedUser = {
-      id: users[0].id, // Use the record ID from Airtable
+    const user = users[0];
+    const rawUser = {
+      id: user.id,
       firstName: user.name_first,
       lastName: user.name_last,
       email: user.email,
       name: `${user.name_first} ${user.name_last}`.trim(),
     };
+
+    logger.debug('getUserBySupabaseId.transform.complete', { 
+      supabaseId,
+      userId: user.id 
+    });
+
+    // Validate the user data against our schema
+    const validationResult = userProfileSchema.safeParse(rawUser);
     
-    console.log('Returning normalized user:', normalizedUser);
-    return normalizedUser;
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', error.message);
-      console.error('Error stack:', error.stack);
+    if (!validationResult.success) {
+      logger.error('getUserBySupabaseId.validation.failed', {
+        supabaseId,
+        userId: user.id,
+        error: validationResult.error
+      });
+      return {
+        error: 'Invalid user data format',
+        isSuccess: false
+      };
     }
-    return null;
+
+    logger.info('getUserBySupabaseId.success', { 
+      supabaseId,
+      userId: user.id 
+    });
+
+    return {
+      data: validationResult.data,
+      isSuccess: true
+    };
+  } catch (error) {
+    logger.error('getUserBySupabaseId.error', {
+      supabaseId,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    
+    return {
+      error: error instanceof AirtableError 
+        ? 'Failed to fetch user profile from Airtable'
+        : 'An unexpected error occurred',
+      isSuccess: false
+    };
   }
-} 
+}

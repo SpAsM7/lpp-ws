@@ -1,0 +1,326 @@
+# Absolute Code Rules
+
+This document uses specific keywords to indicate requirement levels:
+
+- **MUST / MUST NOT**: Absolute requirements that cannot be ignored. **Failure to comply with a MUST or MUST NOT will result in immediate rejection of the merge or build.**
+- **SHOULD / SHOULD NOT**: Strong recommendations that can be deviated from only if fully understood  
+- **MAY**: Optional items  
+
+## 1. Tech Stack & Overview
+
+This project is a Next.js-based LP Portal that provides limited partners with a secure interface for viewing and managing investment data, documents, and updates. Our data source is **Airtable** (where GPs store and manage records), and user authentication is handled by **Supabase**.
+
+1. **Frontend**  
+   - Next.js 15 with App Router  
+   - React 18 with Server Components  
+   - TypeScript with strict mode  
+   - Tailwind CSS  
+   - shadcn UI components (Zinc theme)
+
+2. **Database & Platform**  
+   - **Airtable** for all LP-related data (documents, roles, accounts, etc.)  
+   - **Supabase** for user authentication only:
+     - Sign-up, sign-in, password resets, and JWT issuance
+     - We do **not** use Supabase Postgres for data storage or row-level security
+
+3. **Infrastructure**  
+   - Vercel for Frontend & Serverless Functions  
+   - Airtable as primary DB (via its API/SDK)  
+   - Supabase Cloud for Authentication  
+
+4. **Additional Libraries**  
+   - React Hook Form & Zod for form handling  
+   - TanStack Query for data fetching  
+   - TanStack Table for data tables  
+   - Recharts for data visualization  
+   - date-fns for date handling  
+
+---
+
+## 3. Workflow Laws
+
+### Law #0: AlwaysFollow the Rules
+
+When making changes, **MUST** follow these sections of `/PRD/coding-rules.md` based on the type of change:
+
+1. **UI Changes**
+   - **MUST** follow Section 16 (Styling & Theme) for all styling decisions
+   - **MUST** follow Section 12 (Components) for component architecture
+   - **MUST** follow Section 7 (Loading States) for loading states
+   - **MUST** follow Section 14 (Error Handling) for error states
+
+2. **Data & Backend**
+   - **MUST** follow Section 9 (Data Management) for all Airtable operations
+   - **MUST** follow Section 10 (Schema Management) for schema changes
+   - **MUST** follow Section 13 (Server-Side Logic) for server actions
+   - **MUST** follow Section 17 (Environment Variables) for configuration
+
+3. **Authentication**
+   - **MUST** follow Section 8 (Authentication) for all auth flows
+   - **MUST** follow Section 11 (Middleware) for route protection
+   - **MUST** follow Section 6 (Route Structure) for auth endpoints
+
+4. **Project Organization**
+   **MUST** follow:
+   - Section 4 for file placement
+   - Section 5 for naming & formatting
+   - Section 15 for dependencies
+
+5. **Testing & Quality**
+   - **MUST** follow Section 18 (Testing) for test implementation
+   - **MUST** follow Section 14 (Error Handling) for error cases and recovery paths
+   - **MUST** document according to Law #3 (Documentation)
+   - **MUST** ensure both test coverage and error handling are complete before marking work as done
+
+Remember:
+- **MUST** check these sections BEFORE making changes
+- **MUST** follow ALL relevant sections (changes often cross multiple concerns)
+- **MUST** prioritize sections specific to your change type
+- When in doubt, **MUST** ask for clarification
+
+### Law #1: Verify & Reuse Existing Code Before Creating New Code
+
+1. **Search Before Implementing**  
+   - **MUST** check the entire codebase (domains, shared utilities, components) for existing functionality **before** writing anything new.  
+   - **MUST** confirm no similar logic or pattern already exists.
+
+2. **Unify & Extend**  
+   - **MUST** **extend or reuse** an existing solution if found, rather than creating a duplicate.  
+   - **MUST** unify duplicates if they appear. Avoid parallel code paths that solve the same problem.
+
+3. **Document the Decision**  
+   - **MUST** briefly explain your search or rationale (e.g., in pull requests, commit messages):  
+     - “Searched `/src/lib/domains/accounts` and `/src/components/accounts`… no matching function found. Creating new `createAccountAction`.”  
+
+### Law #2: Manage Airtable & Supabase Config Manually
+
+1. **Manual Schema & Auth**  
+   - **MUST** perform all Airtable field/table modifications in the Airtable UI.  
+   - **MUST** configure Supabase auth settings in the Supabase dashboard.  
+   - **MUST NOT** attempt programmatic schema changes or direct system-level edits.
+
+2. **Prompt & Wait for Approval**  
+   - **MUST** propose exact field names, types, or configurations when code needs new schema.  
+   - **MUST** wait for **explicit** user confirmation before implementing code dependent on those changes.
+
+### Law #3: Maintain Documentation in Step with Development
+
+1. **What to Update**  
+   - **Key Reference Files**:
+     - `product-requirements.md` – Update when **new features** are added or **existing features** are significantly changed
+     - `component-requirements.md` – Update when a **component** is added, modified, or completed
+     - `app-flow.mermaid` – Update if a **new flow** is introduced or an **existing flow** changes significantly
+     - `working-status.md` – Update at each **logical development step** (starting a feature, finishing a sub-feature, discovering new tasks)
+   - **Code Documentation**: Follow Section 5.6 (Documentation) for all code documentation requirements, including:
+     - File headers and purpose statements
+     - Function and method documentation
+     - Type and interface documentation
+     - Comments and inline documentation
+
+2. **How & When to Update**  
+   - **Consistency**:
+     - **MUST NOT** introduce contradictory statements in any doc
+     - **MUST** flag conflicts for user clarification **immediately**
+     - **MUST** keep comments minimal and meaningful
+     - **MUST** update documentation when functionality changes
+   - **Timing**:
+     - **MUST** update relevant docs **before** finalizing a merge/pull request
+     - **SHOULD** revise docs if bug fixes alter documented behavior
+     - **MUST** document changes as they happen, not after the fact
+     - **MUST** update all affected documentation when making changes
+
+### Law #4: Follow Requirements, Stay on Task, & Seek Approvals
+
+1. **Check Requirements First**  
+   - **MUST** consult `component-requirements.md` and `product-requirements.md` **before** coding.  
+   - If something is unclear or missing, **MUST** ask the user for a decision instead of guessing.
+
+2. **Stay on Task**  
+   - **MUST** focus on resolving the **current** issue or error.  
+   - If unrelated problems or improvement ideas are uncovered, **MUST** add them as notes to `working-status.md`.  
+   - **MUST NOT** derail the current task to pursue those side issues. Wait for user approval or instructions to address them next.
+
+3. **Restrict Off-Task UI Changes**
+   - **MUST NOT** make UI changes during edits unless:
+     - The user has explicitly requested UI changes, or
+     - You have requested and received explicit permission from the user to change the UI
+   - This applies to all visual changes including layout, styling, component structure, and interaction patterns
+
+4. **Implementation & Approvals**  
+   - **MUST** reflect actual changes in `working-status.md` as you progress (e.g., "Fixed Issue #123, awaiting user review")
+   - **MUST** pause immediately and prompt the user for guidance if a conflict, unclear requirement, or unexpected scenario arises
+   - **MUST NOT** attempt to fix or modify code outside the original scope while waiting for feedback
+   - **MUST** document the specific issue or question that caused the pause in `working-status.md`
+
+### Law #5: Deliver Features in Small, Verified Steps
+
+1. **Incremental Bites**  
+   - **MUST** implement new features or fixes as small, self-contained changes aligned with the relevant requirement item (e.g., "Implementing 7.1.2 Document Search UI").  
+   - Avoid massive multi-feature merges that confuse the review process.
+
+2. **Blockers & Dependencies**  
+   - **MUST** request or confirm Airtable/Supabase changes (Law #2) **before** coding dependent features.  
+   - If a blocking dependency arises (e.g., a schema field is missing), **MUST** document it in `working-status.md` and pause until resolved.
+
+3. **Testing & Verification**  
+   - **MUST** test each small change to ensure it meets the requirement (UI correctness, data filters, or permissions).  
+   - **SHOULD** gather quick user feedback (if possible) before proceeding to the next chunk.
+
+## 4. Project Structure Overview
+
+```
+/
+├── app/                   # Next.js App Router (pages and API routes)
+│   ├── (auth)/            # Auth pages and their specific components
+│   │   └── _components/   # Components used ONLY by auth pages
+│   ├── (dashboard)/       # Main pages and their specific components
+│   │   └── _components/   # Components used ONLY by dashboard pages
+│   └── api/               # API routes (auth endpoints, webhooks, etc.)
+├── src/
+│   ├── lib/               # Shared code and business logic - ALL shared code MUST go here
+│   │   ├── domains/       # Core business domains (accounts, companies, investments) - domain-specific logic MUST go here
+│   │   ├── features/      # Cross-domain features (document-access, metrics) - cross-domain logic MUST go here
+│   │   ├── actions/       # Server Actions organized by feature or domain
+│   │   ├── errors/        # Centralized error dictionary
+│   │   ├── airtable/      # Airtable queries and utilities
+│   │   └── supabase/      # Supabase client configs (client.ts, server.ts) for auth
+│   ├── components/        # Shared components used across multiple pages
+│   │   ├── ui/            # shadcn components (buttons, inputs, etc.)
+│   │   ├── layout/        # Layout wrappers (headers, sidebars)
+│   │   ├── loading/       # Loading states and skeletons
+│   │   ├── forms/         # Shared form components
+│   │   ├── icons/         # Centralized icon components
+│   │   ├── providers/     # Context providers
+│   │   ├── [domain]/      # Components shared within a domain (e.g., accounts/)
+│   │   └── [feature]/     # Components shared within a feature
+│   └── types/             # Shared TypeScript types - ALL shared types MUST go here
+├── tests/                 # Tests (unit in __tests__, e2e in e2e/)
+├── public/                # Static assets
+├── .env.example           # Environment variable documentation
+└── middleware.ts          # Edge middleware for authentication
+```
+
+## 5. Code Style
+
+1. **Directory Names**: use lowercase with dashes (e.g. `user-management`)  
+2. **Exports**: prefer named exports over default exports  
+3. **Order** in files: top-level exports → subcomponents → helpers → static content → types  
+4. **Conditionals**: omit curly braces for single-line if statements  
+5. **Variable Names**: must be descriptive, especially booleans (`isLoading`, `hasError`)  
+6. **Documentation**:
+   - **Files**: Follow requirements in Law #3.4 (File-Level Documentation)
+   - **Functions & Methods**:
+     - MUST have a brief JSDoc comment explaining purpose and behavior
+     - MUST document parameters and return types with TypeScript
+     - MUST include example usage for complex functions
+     - MUST document side effects (e.g., API calls, state changes)
+     - MUST explain any non-obvious logic or business rules
+   - **Interfaces & Types**:
+     - MUST document each property with JSDoc comments
+     - MUST explain constraints and valid values
+     - MUST reference related types or interfaces
+   - **Comments**:
+     - MUST explain "why" not "what" (code should be self-documenting)
+     - MUST keep inline comments minimal and meaningful
+     - MUST update comments when code changes
+     - MUST NOT commit commented-out code
+7. **File Size & Organization**:
+   - Each file SHOULD be under 300 lines of code
+   - SHOULD split large modules into smaller logical pieces
+   - MUST extract reusable logic into separate files
+   - MUST group related functionality together
+
+8. **Import & Module Organization**:
+   - MUST use absolute imports from `@/` not relative paths
+   - MUST NOT put business logic in components
+   - MUST keep business logic in appropriate domain or feature directories
+   - MUST use barrel exports (`index.ts`) for public module APIs
+   - MUST use explicit imports (no `import *`)
+
+## 6. Next.js 15 Breaking Changes
+
+1. **Server Actions**
+   - **MUST** declare all Server Actions as async functions:
+     ```ts
+     // Before (will error in Next.js 15)
+     export function myAction() {}
+     
+     // After (required in Next.js 15)
+     export async function myAction() {}
+     ```
+   - This applies to:
+     - All functions marked with 'use server'
+     - All functions in files marked with 'use server'
+     - All Server Action functions passed to forms
+   - **MUST NOT** use non-async Server Actions even if they don't contain async operations
+
+2. **Cookie Handling**  
+   - **MUST** handle `cookies()` as an async operation:
+     ```ts
+     const cookieStore = await cookies()
+     ```
+   - **MUST** make cookie operations async in server components and route handlers:
+     ```ts
+     cookies: {
+       async get(name: string) {
+         return (await cookieStore).get(name)?.value
+       },
+       async set(name: string, value: string) {
+         (await cookieStore).set(name, value)
+       },
+       async remove(name: string) {
+         (await cookieStore).delete(name)
+       }
+     }
+     ```
+   - **MUST** handle both request and response cookies in middleware:
+     ```ts
+     set(name: string, value: string, options: CookieOptions) {
+       // Set on request
+       request.cookies.set({ name, value, ...options })
+       // Set on response
+       response.cookies.set({ name, value, ...options })
+     }
+     ```
+
+3. **Fetch Caching**  
+   - Fetch requests are no longer cached by default
+   - **MUST** explicitly opt-in to caching with `cache: 'force-cache'`:
+     ```ts
+     // Not cached
+     const data = await fetch('https://api.example.com')
+     
+     // Cached
+     const data = await fetch('https://api.example.com', { 
+       cache: 'force-cache' 
+     })
+     ```
+   - **MAY** use `fetchCache = 'default-cache'` segment config to opt-in entire layouts/pages
+
+4. **Route Handlers**  
+   - `GET` functions in Route Handlers are no longer cached by default
+   - **MUST** explicitly opt-in to caching with route config:
+     ```ts
+     export const dynamic = 'force-static'
+     export async function GET() {}
+     ```
+
+5. **Client-side Router Cache**  
+   - Page segments are no longer reused from client-side router cache
+   - **MAY** opt-in to caching with `staleTimes` config:
+     ```ts
+     // next.config.js
+     module.exports = {
+       experimental: {
+         staleTimes: {
+           dynamic: 30,
+           static: 180,
+         },
+       },
+     }
+     ```
+
+6. **Error Handling**  
+   - **MUST** handle async errors in cookie operations
+   - **MUST** provide fallbacks for cookie operations that may fail
+   - **MUST** handle cases where cookies are not available or accessible

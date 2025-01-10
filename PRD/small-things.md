@@ -11,3 +11,5 @@ the auth animation does funny scaling when the window is resized
 password reset flow is not working--it goes directly to home becuase of active session. Need to decided how to handle. Could split the sessions and force a new login or could just send the user directly to the update password page inside the app.
 
 make auth a route group
+
+centralized airtable caching, just put a clock on things so we don't overload the database

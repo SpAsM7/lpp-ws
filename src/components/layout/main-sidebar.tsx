@@ -63,6 +63,8 @@ import { cn } from "@/lib/features/ui/utils/styles"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { createSignOutAction } from "@/lib/actions/auth/create-signout"
 import { useToast } from "@/components/ui/use-toast"
+import { useUserProfile } from "@/lib/domains/user/hooks/use-user-profile"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const data = {
   user: {
@@ -114,10 +116,22 @@ export function Sidebar({ children }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { toast } = useToast()
+  const { profile, isLoading, error } = useUserProfile()
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Handle error state
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load user profile",
+        variant: "destructive",
+      })
+    }
+  }, [error, toast])
 
   const handleLogout = async () => {
     try {
@@ -290,20 +304,38 @@ export function Sidebar({ children }: SidebarProps) {
                         className="data-[state=open]:bg-accent data-[state=open]:text-primary"
                       >
                         <Avatar className="h-8 w-8 rounded-lg shrink-0">
-                          <AvatarImage
-                            src={data.user.avatar || ''}
-                            alt={data.user.name || 'User'}
-                          />
-                          <AvatarFallback className="rounded-lg">
-                            {data.user.name ? data.user.name.slice(0,2).toUpperCase() : 'JD'}
-                          </AvatarFallback>
+                          {isLoading ? (
+                            <Skeleton className="h-8 w-8 rounded-lg" />
+                          ) : (
+                            <>
+                              <AvatarImage
+                                src={profile?.avatar}
+                                alt={profile ? `${profile.firstName} ${profile.lastName}` : undefined}
+                              />
+                              <AvatarFallback className="rounded-lg">
+                                {profile ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase() : '...'}
+                              </AvatarFallback>
+                            </>
+                          )}
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
                           <span className="truncate font-semibold">
-                            {data.user.name || 'User'}
+                            {isLoading ? (
+                              <Skeleton className="h-4 w-24" />
+                            ) : profile ? (
+                              `${profile.firstName} ${profile.lastName}`
+                            ) : (
+                              'No Profile'
+                            )}
                           </span>
                           <span className="truncate text-xs">
-                            {data.user.email || 'user@example.com'}
+                            {isLoading ? (
+                              <Skeleton className="h-3 w-32" />
+                            ) : profile?.email ? (
+                              profile.email
+                            ) : (
+                              'No Email'
+                            )}
                           </span>
                         </div>
                         <ChevronsUpDown className="ml-auto size-4 shrink-0" />
@@ -321,20 +353,38 @@ export function Sidebar({ children }: SidebarProps) {
                       <DropdownMenuLabel className="p-0 font-normal">
                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                           <Avatar className="h-8 w-8 rounded-lg">
-                            <AvatarImage
-                              src={data.user.avatar || ''}
-                              alt={data.user.name || 'User'}
-                            />
-                            <AvatarFallback className="rounded-lg">
-                              {data.user.name ? data.user.name.slice(0,2).toUpperCase() : 'JD'}
-                            </AvatarFallback>
+                            {isLoading ? (
+                              <Skeleton className="h-8 w-8 rounded-lg" />
+                            ) : (
+                              <>
+                                <AvatarImage
+                                  src={profile?.avatar}
+                                  alt={profile ? `${profile.firstName} ${profile.lastName}` : undefined}
+                                />
+                                <AvatarFallback className="rounded-lg">
+                                  {profile ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase() : '...'}
+                                </AvatarFallback>
+                              </>
+                            )}
                           </Avatar>
                           <div className="grid flex-1 text-left text-sm leading-tight">
                             <span className="truncate font-semibold">
-                              {data.user.name || 'User'}
+                              {isLoading ? (
+                                <Skeleton className="h-4 w-24" />
+                              ) : profile ? (
+                                `${profile.firstName} ${profile.lastName}`
+                              ) : (
+                                'No Profile'
+                              )}
                             </span>
                             <span className="truncate text-xs">
-                              {data.user.email || 'user@example.com'}
+                              {isLoading ? (
+                                <Skeleton className="h-3 w-32" />
+                              ) : profile?.email ? (
+                                profile.email
+                              ) : (
+                                'No Email'
+                              )}
                             </span>
                           </div>
                         </div>
@@ -381,4 +431,3 @@ export function Sidebar({ children }: SidebarProps) {
 }
 // Export as default for dynamic import
 export default Sidebar
-

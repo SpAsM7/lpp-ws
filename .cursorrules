@@ -267,70 +267,48 @@ We rely on **Supabase** exclusively for user sign-up, log-in, and password reset
 
 **MUST NOT** store tokens in localStorage or client-side state—sessions are cookie-based only.
 
-1. **Auth Actions** MUST follow these patterns (under `src/lib/actions/auth/`):  
-   - `create-login.ts` - Sign in with email/password
-   - `create-signup.ts` - New user registration
-   - `create-signout.ts` - Session termination
-   - `create-reset-request.ts` - Password reset request
-   - `update-password.ts` - Password update after reset
-   - `verify-email.ts` - Email verification
-   - `create-magic-link.ts` - Magic link authentication
+1. **Auth Actions**
+   - MUST place all auth actions under `src/lib/actions/auth/`
+   - MUST follow naming convention: `create-*.ts` for creation actions, `update-*.ts` for updates
+   - MUST implement all core flows: login, signup, signout, password reset, magic link, email verification
+   - MUST place auth pages under `app/auth/` following Next.js file conventions
 
-   **Page Components** (under `app/auth/`):  
-   - `login/page.tsx` - Sign in forms (URL: `/auth/login`)  
-   - `signup/page.tsx` - Sign up forms (URL: `/auth/signup`)  
-   - `callback/page.tsx` - Auth callback handling (URL: `/auth/callback`)  
-   - `reset-password/page.tsx` - Password reset forms (URL: `/auth/reset-password`)  
-   - `update-password/page.tsx` - Password update forms (URL: `/auth/update-password`)  
-   - `verify/page.tsx` - Email verification (URL: `/auth/verify`)
-
-2. **Supabase Client Methods**  
-   - **Client Components**: MUST use `createClient()` from `@/lib/supabase/client` (creates browser-side client)  
-   - **Server Components**: MUST use `createServerComponentClient()` from `@supabase/auth-helpers-nextjs` (creates server-side client)  
-   - **Server Actions**: MUST use `createClient()` from `@/lib/supabase/server` (creates server-side client with cookie handling)  
-   - **Middleware**: MUST use `createServerClient()` from `@supabase/ssr` (creates edge-runtime client)  
-
-   **Important Note**: While both client and server environments have functions named `createClient()`, they are distinct functions imported from different files and create different types of clients:
-   - `@/lib/supabase/client` creates a browser-only client for client components
-   - `@/lib/supabase/server` creates a server-only client with cookie handling for server actions
-   These functions MUST NOT be used interchangeably as they handle auth state differently.
+2. **Client Creation**
+   - MUST use appropriate client for each context (browser, server, middleware)
+   - MUST use standardized cookie handling patterns as documented in `@auth.md`
+   - MUST NOT mix client types or cookie handling approaches
+   - MUST follow Next.js 15 cookie requirements
 
 3. **Session Management**
-   - MUST follow Next.js 15 cookie requirements (see Section 19.2)
-   - MUST implement session refresh in middleware and server components
-   - MUST handle session expiry gracefully with proper error states
-   - MUST NOT store auth tokens or user data in localStorage/client state
-   - MUST handle auth state changes through proper session management
-   - MUST implement proper error boundaries for auth flows
+   - MUST use Supabase's built-in session management
+   - MUST use secure HTTP-only cookies
+   - MUST NOT store auth tokens in localStorage/client state
+   - SHOULD configure appropriate session lengths in Supabase dashboard (Pro)
 
-4. **Server Action Auth**
-   - MUST use `createClient()` from `@/lib/supabase/server` for all auth actions
-   - MUST handle cookie operations asynchronously
-   - MUST implement proper error boundaries
-   - MUST refresh sessions appropriately
-   - MUST provide fallback UI for auth errors
-   - MUST handle session refresh failures gracefully
-   - MUST follow PKCE flow for password reset and OAuth
-
-   **Important**: Server Actions and Server Components each require their own distinct client helper:
-   - Server Components use `createServerComponentClient()` from `@supabase/auth-helpers-nextjs`
-   - Server Actions use `createClient()` from `@/lib/supabase/server`
-   These MUST NOT be used interchangeably as they serve different purposes in the Next.js 15 architecture.
-
-5. **Protected Routes**
-   - MUST handle protected routes in `middleware.ts`
-   - MUST implement proper error states for unauthorized access
-   - MUST redirect to login for unauthenticated users
-   - MUST handle session validation failures gracefully
-   - MUST NOT mix auth logic between middleware and page components
-
-6. **Error Handling**
-   - MUST use centralized error dictionary from `/src/lib/errors/auth`
-   - MUST provide user-friendly error messages
-   - MUST implement proper error recovery paths
-   - MUST log detailed errors server-side
+4. **Error Handling**
+   - MUST use Supabase's built-in error types
+   - MUST provide user-friendly error messages via toast notifications
+   - MUST implement structured error logging on the server
    - MUST NOT expose internal error details to clients
-   - MUST handle all possible auth states with appropriate messages
+
+5. **Action Return Types**
+   - MUST use `AuthActionState<T>` as return type for all auth actions
+   - MUST include Supabase's error type for detailed error handling
+   - MUST set `isSuccess` based on presence of data and absence of error
+   - MUST type the `data` field appropriately for each action
+
+6. **Route Protection**
+   - MUST implement basic route protection in middleware using Supabase's session management
+   - MUST verify auth state in Server Components before data access
+   - MUST redirect unauthenticated users to login
+   - MUST handle session validation failures gracefully
+   - SHOULD use Supabase Pro features for advanced session configuration when available
+
+7. **Auth Flow Types**
+   - MUST use standard callback types: signup, recovery, magiclink, invite
+   - MUST handle all callback types in the auth callback route
+   - MUST implement proper redirection for each type
+   - MUST follow flow sequences as documented in `@auth.md`
 
 ## 9. Data Management (Airtable)
 

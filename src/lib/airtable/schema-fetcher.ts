@@ -19,7 +19,6 @@ interface Table {
   name: string;
   primaryFieldId: string;
   fields: Field[];
-  description?: string;
 }
 
 interface SchemaResponse {
@@ -31,13 +30,12 @@ async function fetchSchema() {
   const apiKey = process.env.AIRTABLE_API_KEY;
 
   if (!baseId || !apiKey) {
-    throw new Error('Missing required environment variables');
+    throw new Error('Missing required environment variables: AIRTABLE_BASE_ID and/or AIRTABLE_API_KEY');
   }
 
   const response = await fetch(`https://api.airtable.com/v0/meta/bases/${baseId}/tables`, {
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
     },
   });
 
@@ -45,53 +43,76 @@ async function fetchSchema() {
     throw new Error(`Failed to fetch schema: ${response.statusText}`);
   }
 
-  const data: SchemaResponse = await response.json();
-  
-  // Generate TypeScript interfaces
-  let tsContent = '// Auto-generated Airtable schema types\n// Generated on: ' + new Date().toISOString() + '\n\n';
-  tsContent += 'import { Table } from \'airtable-ts\';\n\n';
-  
-  // Base interface
-  tsContent += 'export interface BaseFields {\n  id: string;\n}\n\n';
+  const { tables }: SchemaResponse = await response.json();
 
-  // Generate interfaces for each table
-  data.tables.forEach(table => {
-    const interfaceName = `${capitalize(table.name)}Fields`;
-    tsContent += `export interface ${interfaceName} extends BaseFields {\n`;
-    
-    table.fields.forEach(field => {
-      const fieldType = getTypeScriptType(field);
-      const isOptional = field.type === 'multipleSelects' || field.type === 'multipleAttachments';
-      tsContent += `  ${field.name}${isOptional ? '?' : ''}: ${fieldType};\n`;
-    });
-    
-    tsContent += '}\n\n';
+  // Generate TypeScript interfaces and table schemas
+  let typeScriptContent = `// Auto-generated Airtable schema types
+// Generated on: ${new Date().toISOString()}
 
-    // Generate table configuration
-    tsContent += `export const ${table.name}Table: Table<${interfaceName}> = {\n`;
-    tsContent += `  name: '${table.name}',\n`;
-    tsContent += `  baseId: process.env.AIRTABLE_BASE_ID!,\n`;
-    tsContent += `  tableId: '${table.id}',\n`;
-    tsContent += `  schema: {\n`;
-    table.fields.forEach(field => {
-      const schemaType = getSchemaType(field);
-      tsContent += `    ${field.name}: '${schemaType}',\n`;
-    });
-    tsContent += `  }\n`;
-    tsContent += `};\n\n`;
+import { Table } from 'airtable-ts';
+import { z } from 'zod';
+
+export interface BaseFields {
+  id: string;
+}
+
+`;
+
+  // Generate Zod schemas first
+  tables.forEach(table => {
+    const tableName = capitalize(table.name.replace(/[^a-zA-Z0-9]/g, '_'));
+    
+    typeScriptContent += `export const ${tableName}Schema = z.object({
+  id: z.string(),
+${table.fields.map(field => {
+  const fieldName = field.name.replace(/[^a-zA-Z0-9]/g, '_');
+  const zodType = getZodType(field);
+  return `  ${fieldName}: ${zodType},`;
+}).join('\n')}
+});\n\n`;
   });
 
-  // Save the schema
-  const schemaPath = resolve(process.cwd(), 'src/types/airtable-schema.ts');
-  writeFileSync(schemaPath, tsContent);
-  
-  // Save raw schema for reference
-  const rawSchemaPath = resolve(process.cwd(), 'src/lib/airtable/schema.json');
-  writeFileSync(rawSchemaPath, JSON.stringify(data, null, 2));
+  // Then generate TypeScript interfaces and table schemas
+  tables.forEach(table => {
+    const tableName = capitalize(table.name.replace(/[^a-zA-Z0-9]/g, '_'));
+    
+    // Generate interface
+    typeScriptContent += `export interface ${tableName}Fields extends BaseFields {
+${table.fields.map(field => {
+  const fieldName = field.name.replace(/[^a-zA-Z0-9]/g, '_');
+  const tsType = getTypeScriptType(field);
+  return `  ${fieldName}?: ${tsType};`;
+}).join('\n')}
+}\n\n`;
 
-  console.log('Schema files generated:');
-  console.log('- TypeScript types:', schemaPath);
-  console.log('- Raw schema:', rawSchemaPath);
+    // Generate table schema
+    typeScriptContent += `export const ${table.name.toLowerCase()}Table = {
+  name: '${table.name}',
+  baseId: process.env.AIRTABLE_BASE_ID!,
+  tableId: process.env.AIRTABLE_${table.name.toUpperCase()}_TABLE_ID!,
+  schema: {
+${table.fields.map(field => {
+  const fieldName = field.name.replace(/[^a-zA-Z0-9]/g, '_');
+  const schemaType = getSchemaType(field);
+  return `    ${fieldName}: "${schemaType}",`;
+}).join('\n')}
+  }
+} as const satisfies Table<${tableName}Fields>;\n\n`;
+  });
+
+  // Save TypeScript file
+  writeFileSync(
+    resolve(process.cwd(), 'src/types/airtable-schema.ts'),
+    typeScriptContent
+  );
+
+  // Save raw schema as JSON
+  writeFileSync(
+    resolve(process.cwd(), 'src/lib/airtable/schema.json'),
+    JSON.stringify({ tables }, null, 2)
+  );
+
+  console.log('Schema files generated successfully!');
 }
 
 function capitalize(str: string): string {
@@ -107,45 +128,89 @@ function getTypeScriptType(field: Field): string {
     case 'phone':
     case 'email':
     case 'url':
-      return 'string';
+      return 'string | null';
     case 'multipleSelects':
-      return 'string[]';
+      return 'string[] | null';
     case 'number':
     case 'currency':
     case 'percent':
     case 'rating':
-      return 'number';
+      return 'number | null';
     case 'checkbox':
-      return 'boolean';
+      return 'boolean | null';
     case 'date':
     case 'dateTime':
-      return 'string'; // ISO date string
+      return 'string | null'; // ISO date string
     case 'multipleAttachments':
-      return '{ url: string; filename: string; }[]';
+      return '{ url: string; filename: string; }[] | null';
     default:
-      return 'any';
+      return 'any | null';
   }
 }
 
 function getSchemaType(field: Field): string {
   switch (field.type) {
+    case 'singleLineText':
+    case 'multilineText':
+    case 'richText':
+    case 'singleSelect':
+    case 'phone':
+    case 'email':
+    case 'url':
+      return 'string | null';
     case 'multipleSelects':
-      return 'string[]';
-    case 'multipleAttachments':
-      return 'object[]';
+      return 'string[] | null';
     case 'number':
     case 'currency':
     case 'percent':
     case 'rating':
-      return 'number';
+      return 'number | null';
     case 'checkbox':
-      return 'boolean';
+      return 'boolean | null';
+    case 'date':
+    case 'dateTime':
+      return 'string | null';
+    case 'multipleAttachments':
+      return 'attachment';
     default:
-      return 'string';
+      return 'string | null';
   }
+}
+
+function getZodType(field: Field): string {
+  const baseType = (() => {
+    switch (field.type) {
+      case 'singleLineText':
+      case 'multilineText':
+      case 'richText':
+      case 'singleSelect':
+      case 'phone':
+      case 'email':
+      case 'url':
+        return 'z.string()';
+      case 'multipleSelects':
+        return 'z.array(z.string())';
+      case 'number':
+      case 'currency':
+      case 'percent':
+      case 'rating':
+        return 'z.number()';
+      case 'checkbox':
+        return 'z.boolean()';
+      case 'date':
+      case 'dateTime':
+        return 'z.string()'; // Could be z.date() if we want to parse
+      case 'multipleAttachments':
+        return 'z.array(z.object({ url: z.string(), filename: z.string() }))';
+      default:
+        return 'z.any()';
+    }
+  })();
+  
+  return `z.optional(${baseType}.nullable())`;
 }
 
 // Only run if this file is being executed directly
 if (require.main === module) {
   fetchSchema().catch(console.error);
-} 
+}

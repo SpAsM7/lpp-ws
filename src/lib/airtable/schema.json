@@ -81,6 +81,19 @@
           "id": "fldP39DbWWurkj1X3",
           "name": "user_id",
           "description": "random, unique ID for each user"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldRAlSq7tLUhkOkB",
+          "name": "old_user_id"
+        },
+        {
+          "type": "multipleAttachments",
+          "options": {
+            "isReversed": false
+          },
+          "id": "fldpg4jAxfYGFl5eO",
+          "name": "avatar"
         }
       ],
       "views": [
