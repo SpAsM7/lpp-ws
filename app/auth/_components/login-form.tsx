@@ -10,11 +10,22 @@ import { Alert } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/features/ui/utils/styles"
 import { Icons } from "@/components/ui/icons"
-import { loginSchema, magicLinkSchema, type LoginInput, type MagicLinkInput } from "@/lib/supabase/auth/validations"
-import { useToast } from "@/lib/features/notifications/use-toast"
+import { loginSchema, magicLinkSchema, type LoginInput, type MagicLinkInput } from "@/types/auth"
+import { useToast } from "@/components/ui/use-toast"
+import { createLoginAction } from "@/lib/actions/auth/create-login"
+import { createMagicLinkAction } from "@/lib/actions/auth/create-magic-link"
+import { AUTH_ERRORS } from "@/lib/errors/auth"
+
+const LOGIN_MESSAGES = {
+  magicLink: {
+    title: "Check your email",
+    description: "We've sent you a magic link to sign in."
+  }
+} as const
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -27,6 +38,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
     register: registerPassword,
     handleSubmit: handlePasswordSubmit,
     formState: { errors: passwordErrors },
+    setError: setPasswordError,
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   })
@@ -43,31 +55,23 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
+      const result = await createLoginAction(data)
 
-      if (!response.ok) {
-        throw new Error("Failed to sign in")
+      if (!result.success) {
+        setPasswordError("root", { 
+          type: "manual",
+          message: result.error || AUTH_ERRORS.INVALID_CREDENTIALS.message
+        })
+        return
       }
 
-      toast({
-        title: "Success",
-        description: "You have been signed in successfully.",
-        variant: "success",
-      })
-
-      router.push('/home')
+      // Redirect will be handled by the server action
+      router.refresh()
     } catch (error) {
       console.error("Error signing in:", error)
-      toast({
-        title: "Error",
-        description: "Failed to sign in. Please try again.",
-        variant: "destructive",
+      setPasswordError("root", { 
+        type: "manual",
+        message: error instanceof Error ? error.message : AUTH_ERRORS.UNKNOWN.message
       })
     } finally {
       setIsLoading(false)
@@ -78,33 +82,44 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/magic-link", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
+      const result = await createMagicLinkAction(data)
 
-      if (!response.ok) {
-        throw new Error("Failed to send magic link")
+      if (!result.success) {
+        toast({
+          title: "Authentication Error",
+          description: result.error || AUTH_ERRORS.INVALID_REQUEST.message,
+          variant: "destructive",
+        })
+        return
       }
 
       toast({
-        title: "Check your email",
-        description: "We've sent you a magic link to sign in.",
+        title: LOGIN_MESSAGES.magicLink.title,
+        description: LOGIN_MESSAGES.magicLink.description,
         variant: "success",
       })
     } catch (error) {
       console.error("Error sending magic link:", error)
       toast({
-        title: "Error",
-        description: "Failed to send magic link. Please try again.",
+        title: "Authentication Error",
+        description: error instanceof Error ? error.message : AUTH_ERRORS.INVALID_REQUEST.message,
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className={cn("grid gap-6", className)} {...props}>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -136,6 +151,8 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                       {...registerPassword("email")}
                       className={cn(
                         "pl-10",
+                        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
                         passwordErrors.email ? "border-destructive" : ""
                       )}
                     />
@@ -149,12 +166,14 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/auth/reset-password"
-                      className="text-sm font-medium text-muted-foreground hover:text-foreground"
-                    >
-                      Forgot password?
-                    </Link>
+                    {process.env.NEXT_PUBLIC_FEATURE_FORGOT_PASSWORD === 'true' && (
+                      <Link
+                        href="/auth/reset-password"
+                        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    )}
                   </div>
                   <div className="relative">
                     <Icons.key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -167,6 +186,8 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                       {...registerPassword("password")}
                       className={cn(
                         "pl-10",
+                        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
                         passwordErrors.password ? "border-destructive" : ""
                       )}
                     />
@@ -177,10 +198,10 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                     </p>
                   )}
                 </div>
-                <Button disabled={isLoading}>
-                  {isLoading && (
-                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button 
+                  disabled={isLoading}
+                  className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
                   Sign In
                 </Button>
               </div>
@@ -207,6 +228,8 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                       {...registerMagicLink("email")}
                       className={cn(
                         "pl-10",
+                        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
                         magicLinkErrors.email ? "border-destructive" : ""
                       )}
                     />
@@ -217,10 +240,10 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
                     </p>
                   )}
                 </div>
-                <Button disabled={isLoading}>
-                  {isLoading && (
-                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button 
+                  disabled={isLoading}
+                  className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
                   Send Magic Link
                 </Button>
               </div>

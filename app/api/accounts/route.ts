@@ -1,12 +1,11 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import { newAccountSchema } from "@/lib/schemas/account"
 import type { Database } from "@/types/database"
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const supabase = await createClient()
     const json = await request.json()
 
     // Validate request body

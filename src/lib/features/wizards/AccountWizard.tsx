@@ -17,7 +17,7 @@ import { EntityDetailsForm } from "@/components/forms/EntityDetailsForm"
 import { RetirementDetailsForm } from "@/components/forms/RetirementDetailsForm"
 import { DocumentUploadStep } from "./DocumentUploadStep"
 import { ReviewStep } from "./ReviewStep"
-import { useToast } from "@/lib/features/notifications/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { newAccountSchema } from "@/lib/domains/accounts/schema"
 import type { NewAccountFormData } from "@/lib/domains/accounts/schema"
 

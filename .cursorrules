@@ -265,16 +265,18 @@ Remember:
 
 We rely on **Supabase** exclusively for user sign-up, log-in, and password resets. **All** user-facing data is stored in Airtable; user data remains in Supabase only for auth (email, password, session tokens).
 
-1. **Auth Endpoints** MUST follow these patterns (under `/app/api/auth/`):  
-   - `login/route.ts` - Sign in handlers (email, OAuth)  
-   - `signup/route.ts` - Sign up handlers  
-   - `signout/route.ts` - Sign out handler  
-   - `callback/route.ts` - OAuth/magic link callbacks  
-   - `reset-password/route.ts` - Password reset  
-   - `update-password/route.ts` - Password update after reset  
-   - `verify/route.ts` - Email verification  
+**MUST NOT** store tokens in localStorage or client-side state—sessions are cookie-based only.
 
-   **Page Components** (under `/app/auth/`):  
+1. **Auth Actions** MUST follow these patterns (under `src/lib/actions/auth/`):  
+   - `create-login.ts` - Sign in with email/password
+   - `create-signup.ts` - New user registration
+   - `create-signout.ts` - Session termination
+   - `create-reset-request.ts` - Password reset request
+   - `update-password.ts` - Password update after reset
+   - `verify-email.ts` - Email verification
+   - `create-magic-link.ts` - Magic link authentication
+
+   **Page Components** (under `app/auth/`):  
    - `login/page.tsx` - Sign in forms (URL: `/auth/login`)  
    - `signup/page.tsx` - Sign up forms (URL: `/auth/signup`)  
    - `callback/page.tsx` - Auth callback handling (URL: `/auth/callback`)  
@@ -283,38 +285,78 @@ We rely on **Supabase** exclusively for user sign-up, log-in, and password reset
    - `verify/page.tsx` - Email verification (URL: `/auth/verify`)
 
 2. **Supabase Client Methods**  
-   - **Client Components**: Use `createClient()` from `@/lib/supabase/client`  
-   - **Server Components**: Use `createClient()` from `@/lib/supabase/server`  
-   - **Middleware**: Use `createServerClient()` from `@supabase/ssr`  
-   - **Route Handlers**: Use `createClient()` from `@/lib/supabase/server`  
+   - **Client Components**: MUST use `createClient()` from `@/lib/supabase/client` (creates browser-side client)  
+   - **Server Components**: MUST use `createServerComponentClient()` from `@supabase/auth-helpers-nextjs` (creates server-side client)  
+   - **Server Actions**: MUST use `createClient()` from `@/lib/supabase/server` (creates server-side client with cookie handling)  
+   - **Middleware**: MUST use `createServerClient()` from `@supabase/ssr` (creates edge-runtime client)  
 
-3. Never manipulate cookies directly – use Supabase session methods  
-4. Always handle auth state changes through proper session management  
-5. Protected routes MUST be handled in `middleware.ts`  
-6. Never store auth tokens or user data in localStorage/client state  
+   **Important Note**: While both client and server environments have functions named `createClient()`, they are distinct functions imported from different files and create different types of clients:
+   - `@/lib/supabase/client` creates a browser-only client for client components
+   - `@/lib/supabase/server` creates a server-only client with cookie handling for server actions
+   These functions MUST NOT be used interchangeably as they handle auth state differently.
+
+3. **Session Management**
+   - MUST follow Next.js 15 cookie requirements (see Section 19.2)
+   - MUST implement session refresh in middleware and server components
+   - MUST handle session expiry gracefully with proper error states
+   - MUST NOT store auth tokens or user data in localStorage/client state
+   - MUST handle auth state changes through proper session management
+   - MUST implement proper error boundaries for auth flows
+
+4. **Server Action Auth**
+   - MUST use `createClient()` from `@/lib/supabase/server` for all auth actions
+   - MUST handle cookie operations asynchronously
+   - MUST implement proper error boundaries
+   - MUST refresh sessions appropriately
+   - MUST provide fallback UI for auth errors
+   - MUST handle session refresh failures gracefully
+   - MUST follow PKCE flow for password reset and OAuth
+
+   **Important**: Server Actions and Server Components each require their own distinct client helper:
+   - Server Components use `createServerComponentClient()` from `@supabase/auth-helpers-nextjs`
+   - Server Actions use `createClient()` from `@/lib/supabase/server`
+   These MUST NOT be used interchangeably as they serve different purposes in the Next.js 15 architecture.
+
+5. **Protected Routes**
+   - MUST handle protected routes in `middleware.ts`
+   - MUST implement proper error states for unauthorized access
+   - MUST redirect to login for unauthenticated users
+   - MUST handle session validation failures gracefully
+   - MUST NOT mix auth logic between middleware and page components
+
+6. **Error Handling**
+   - MUST use centralized error dictionary from `/src/lib/errors/auth`
+   - MUST provide user-friendly error messages
+   - MUST implement proper error recovery paths
+   - MUST log detailed errors server-side
+   - MUST NOT expose internal error details to clients
+   - MUST handle all possible auth states with appropriate messages
 
 ## 9. Data Management (Airtable)
 
 All investment, document, role, and account data is kept in **Airtable**, while Supabase handles authentication only.
 
 1. **Architecture**:
+   - MUST use airtable-ts instead of the official Airtable SDK
    - MUST keep all Airtable operations in `/src/lib/airtable`
    - MUST store credentials (base IDs, API keys) in environment variables
    - MUST use TypeScript interfaces for all Airtable tables
    - MUST NEVER use `any` types for Airtable records
 
 2. **File Organization**:
-   - `/src/lib/airtable/client.ts` - API configuration
+   - `/src/lib/airtable/client.ts` - airtable-ts client configuration
+   - `/src/lib/airtable/schema-fetcher.ts` - Schema generation utility
+   - `/src/lib/airtable/schema.json` - Raw schema reference
+   - `/src/types/airtable-schema.ts` - Generated TypeScript types
    - `/src/lib/airtable/queries.ts` - Reusable queries
-   - `/src/types/airtable.ts` - Type definitions
 
 3. **Data Access Patterns**:
-   - **Server Components**: Use Airtable SDK directly
+   - **Server Components**: Use airtable-ts directly
    - **Client Components**: Use Server Actions for Airtable operations
    - **API Routes**: Use SDK only for external integrations/webhooks
    - MUST NOT fetch same data in child components if parent has it
    - MUST pass fetched data down via props
-   - MUST filter data by user's `supabase_uuid` before returning results
+   - MUST filter data by user's `user_id` before returning results
 
 4. **Performance & Scaling**:
    - MUST implement pagination/filtering for large datasets
@@ -355,7 +397,7 @@ All investment, document, role, and account data is kept in **Airtable**, while 
 
 6. **Permissions Model**:
    - Link records to User_Profiles table for permissions
-   - Verify `supabase_uuid` membership in allowed users
+   - Verify `user_id` membership in allowed users
    - Implement row-level filtering in serverless code
    - Document all permission logic in comments
    - NEVER mix GP and LP role checks
@@ -383,12 +425,46 @@ All investment, document, role, and account data is kept in **Airtable**, while 
    - MUST coordinate with GP administrators
    - MUST provide migration guides when needed
 
+4. **Schema Generation**:
+   - MUST use the built-in schema-fetcher for type generation
+   - MUST run schema generation command:
+     ```bash
+     pnpm tsx src/lib/airtable/schema-fetcher.ts
+     ```
+   - MUST verify generated types match Airtable schema
+   - MUST commit both schema.json and airtable-schema.ts
+   - MUST document any manual type adjustments
+   - MUST run schema generation after any Airtable schema changes
+   - MUST update dependent code when schema changes
+
 ## 11. Middleware
 
 1. MUST exist in `middleware.ts` at project root  
-2. Use `createServerClient()` from `@supabase/ssr` to handle authentication in middleware  
-3. Must ensure a user is authenticated (if route requires login) before allowing access  
-4. DO NOT add application logic in page or API route files for restricting access—enforce in middleware + serverless checks  
+
+2. **Authentication Setup**
+   - MUST use `createServerClient()` from `@supabase/ssr` to handle authentication
+   - MUST implement proper session refresh logic
+   - MUST handle authentication failures gracefully
+   - MUST redirect unauthenticated users appropriately
+
+3. **Cookie & Session Handling**
+   - MUST follow Next.js 15 cookie requirements (see Section 19.2)
+   - MUST use a single response instance for all operations
+   - MUST handle both request and response states
+   - MUST implement proper error recovery (see Section 8.6)
+
+4. **Route Protection**
+   - MUST ensure user is authenticated before allowing access to protected routes
+   - MUST implement proper error states for unauthorized access
+   - MUST handle session validation failures gracefully
+   - MUST NOT add application logic in page or API route files for restricting access
+   - MUST enforce access control in middleware + serverless checks
+
+5. **Performance & Caching**
+   - MUST implement proper caching strategies
+   - MUST handle session refresh efficiently
+   - MUST NOT block on unnecessary operations
+   - MUST optimize cookie operations
 
 ## 12. Components
 
@@ -504,9 +580,11 @@ All investment, document, role, and account data is kept in **Airtable**, while 
 ## 15. Dependencies/Packages
 
 1. **Airtable**  
-   - Use the official Airtable API or Node SDK in `/src/lib/airtable`  
-   - Keep version pinned (no `^` or `~` in package.json)  
-   - NEVER commit tokens or keys  
+   - MUST use airtable-ts package for all Airtable operations
+   - MUST pin airtable-ts version in package.json (no `^` or `~`)
+   - MUST NOT use the official Airtable SDK directly
+   - MUST keep schema in sync using schema-fetcher
+   - MUST NEVER commit tokens or keys
 
 2. **Supabase**  
    - Only for auth; pinned version; do not import unused subpackages (e.g., Postgres clients or storage)  
@@ -656,3 +734,91 @@ All investment, document, role, and account data is kept in **Airtable**, while 
 4. **Coverage**  
    - Ensure coverage for all critical data-handling code (Airtable row checks, role logic)  
    - Include GP/LP role separation logic in tests  
+
+## 19. Next.js 15 Breaking Changes
+
+1. **Server Actions**
+   - **MUST** declare all Server Actions as async functions:
+     ```ts
+     // Before (will error in Next.js 15)
+     export function myAction() {}
+     
+     // After (required in Next.js 15)
+     export async function myAction() {}
+     ```
+   - This applies to:
+     - All functions marked with 'use server'
+     - All functions in files marked with 'use server'
+     - All Server Action functions passed to forms
+   - **MUST NOT** use non-async Server Actions even if they don't contain async operations
+
+2. **Cookie Handling**  
+   - **MUST** handle `cookies()` as an async operation:
+     ```ts
+     const cookieStore = await cookies()
+     ```
+   - **MUST** make cookie operations async in server components and route handlers:
+     ```ts
+     cookies: {
+       async get(name: string) {
+         return (await cookieStore).get(name)?.value
+       },
+       async set(name: string, value: string) {
+         (await cookieStore).set(name, value)
+       },
+       async remove(name: string) {
+         (await cookieStore).delete(name)
+       }
+     }
+     ```
+   - **MUST** handle both request and response cookies in middleware:
+     ```ts
+     set(name: string, value: string, options: CookieOptions) {
+       // Set on request
+       request.cookies.set({ name, value, ...options })
+       // Set on response
+       response.cookies.set({ name, value, ...options })
+     }
+     ```
+
+3. **Fetch Caching**  
+   - Fetch requests are no longer cached by default
+   - **MUST** explicitly opt-in to caching with `cache: 'force-cache'`:
+     ```ts
+     // Not cached
+     const data = await fetch('https://api.example.com')
+     
+     // Cached
+     const data = await fetch('https://api.example.com', { 
+       cache: 'force-cache' 
+     })
+     ```
+   - **MAY** use `fetchCache = 'default-cache'` segment config to opt-in entire layouts/pages
+
+4. **Route Handlers**  
+   - `GET` functions in Route Handlers are no longer cached by default
+   - **MUST** explicitly opt-in to caching with route config:
+     ```ts
+     export const dynamic = 'force-static'
+     export async function GET() {}
+     ```
+
+5. **Client-side Router Cache**  
+   - Page segments are no longer reused from client-side router cache
+   - **MAY** opt-in to caching with `staleTimes` config:
+     ```ts
+     // next.config.js
+     module.exports = {
+       experimental: {
+         staleTimes: {
+           dynamic: 30,
+           static: 180,
+         },
+       },
+     }
+     ```
+
+6. **Error Handling**  
+   - **MUST** handle async errors in cookie operations
+   - **MUST** provide fallbacks for cookie operations that may fail
+   - **MUST** handle cases where cookies are not available or accessible

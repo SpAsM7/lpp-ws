@@ -1,19 +1,8 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
-import { NextResponse, type NextRequest } from "next/server"
-
-const cookieSettings: Partial<CookieOptions> = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
-  path: "/"
-}
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  const response = NextResponse.next()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,107 +13,52 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          try {
-            response.cookies.set({
-              name,
-              value,
-              ...cookieSettings,
-              ...options,
-            })
-          } catch (error) {
-            console.error("Error setting cookie in middleware:", error)
-          }
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
         },
         remove(name: string, options: CookieOptions) {
-          try {
-            response.cookies.set({
-              name,
-              value: "",
-              ...cookieSettings,
-              ...options,
-              maxAge: 0
-            })
-          } catch (error) {
-            console.error("Error removing cookie in middleware:", error)
-          }
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
         },
       },
     }
   )
 
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-    // Get the pathname from the URL
-    const path = request.nextUrl.pathname
-
-    // Allow static files and API routes
-    if (
-      path.startsWith('/_next') || 
-      path.startsWith('/api') ||
-      path.includes('.')
-    ) {
-      return response
-    }
-
-    // Handle root path
-    if (path === '/') {
-      const redirectUrl = session ? '/home' : '/auth/login'
-      return NextResponse.redirect(new URL(redirectUrl, request.url))
-    }
-
-    // Define auth and protected paths
-    const authPaths = [
-      '/auth/login',
-      '/auth/signup',
-      '/auth/reset-password',
-      '/auth/verify'
-    ]
-    const protectedPaths = ['/home', '/companies', '/investments', '/accounts', '/documents']
-    const isAuthPath = authPaths.includes(path)
-    const isProtectedPath = protectedPaths.includes(path) || 
-                          path.startsWith('/companies/') || 
-                          path.startsWith('/accounts/')
-
-    // Always allow access to callback and update password paths
-    if (
-      path === '/auth/callback' || 
-      path.startsWith('/api/auth/callback') ||
-      path === '/auth/update-password'
-    ) {
-      return response
-    }
-
-    // If logged in and trying to access auth pages, redirect to home
-    if (session && isAuthPath) {
-      return NextResponse.redirect(new URL('/home', request.url))
-    }
-
-    // If not logged in and trying to access protected pages, redirect to login
-    if (!session && isProtectedPath) {
-      const searchParams = new URLSearchParams()
-      searchParams.set('redirect', path)
-      return NextResponse.redirect(new URL(`/auth/login?${searchParams}`, request.url))
-    }
-
-    return response
-  } catch (error) {
-    console.error("Error in middleware:", error)
-    return response
+  // If user is not signed in and the current path is not /auth/* redirect the user to /auth/login
+  if (!user && !request.nextUrl.pathname.startsWith('/auth/')) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
+
+  return response
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
+     * Match all request paths except for:
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - api/auth/callback (auth callback endpoint)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/auth/callback).*)',
   ],
-} 
+}

@@ -1,23 +1,13 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { DashboardWrapper } from "@/components/layout/dashboard-wrapper";
+import { Sidebar } from "@/components/layout/main-sidebar"
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const headersList = await headers();
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  return <DashboardWrapper>{children}</DashboardWrapper>;
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar>{children}</Sidebar>
+    </div>
+  )
 }

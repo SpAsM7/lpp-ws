@@ -30,8 +30,8 @@ function DashboardSkeleton() {
   )
 }
 
-// Dynamically import Sidebar with SSR disabled
-const Sidebar = dynamic(() => import("./main-sidebar"), {
+// Dynamically import MainSidebar with SSR disabled
+const MainSidebar = dynamic(() => import("./main-sidebar"), {
   ssr: false,
   loading: DashboardSkeleton,
 })
@@ -47,5 +47,5 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
     return <DashboardSkeleton />
   }
 
-  return <Sidebar>{children}</Sidebar>
+  return <MainSidebar>{children}</MainSidebar>
 }

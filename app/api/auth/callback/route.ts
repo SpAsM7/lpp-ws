@@ -1,42 +1,36 @@
-import { createRouteHandlerClient } from "@/lib/supabase/server"
-import { NextResponse } from "next/server"
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get("code")
-  const type = requestUrl.searchParams.get("type")
+  const code = requestUrl.searchParams.get('code')
 
-  if (!code) {
-    return NextResponse.json(
-      { error: "No authorization code found" },
-      { status: 400 }
+  if (code) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          async get(name) {
+            const cookieStore = await cookies()
+            return cookieStore.get(name)?.value
+          },
+          async set(name, value, options) {
+            const cookieStore = await cookies()
+            cookieStore.set({ name, value, ...options })
+          },
+          async remove(name, options) {
+            const cookieStore = await cookies()
+            cookieStore.delete(name)
+          },
+        },
+      }
     )
+
+    await supabase.auth.exchangeCodeForSession(code)
   }
 
-  try {
-    const supabase = await createRouteHandlerClient()
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (error) {
-      return NextResponse.json(
-        { error: error.message || "Authentication failed" },
-        { status: 401 }
-      )
-    }
-
-    // For password reset flow, return success with type
-    if (type === "recovery") {
-      return NextResponse.json({ 
-        success: true,
-        type: "recovery"
-      })
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to sign in" },
-      { status: 500 }
-    )
-  }
-}
+  // URL to redirect to after sign in process completes
+  return NextResponse.redirect(new URL('/', requestUrl.origin))
+} 

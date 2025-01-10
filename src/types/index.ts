@@ -1,4 +1,11 @@
-// Common type definitions for the application
+/**
+ * Common type definitions for the application.
+ * Follows Section 5.3 order: top-level exports → subcomponents → helpers → static content → types
+ */
+
+// Re-export all auth types
+export * from './auth';
+export * from './supabase';
 
 // User related types
 export interface User {

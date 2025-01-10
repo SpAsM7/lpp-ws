@@ -61,6 +61,8 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { cn } from "@/lib/features/ui/utils/styles"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { createSignOutAction } from "@/lib/actions/auth/create-signout"
+import { useToast } from "@/components/ui/use-toast"
 
 const data = {
   user: {
@@ -71,7 +73,7 @@ const data = {
   navMain: [
     {
       title: "Home",
-      url: "/home",
+      url: "/",
       icon: Home,
     },
     {
@@ -109,9 +111,9 @@ interface SidebarProps {
 
 export function Sidebar({ children }: SidebarProps) {
   const [mounted, setMounted] = React.useState(false)
-  const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const pathname = usePathname()
+  const { toast } = useToast()
 
   React.useEffect(() => {
     setMounted(true)
@@ -119,20 +121,26 @@ export function Sidebar({ children }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/signout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to sign out');
+      const result = await createSignOutAction()
+      
+      if (!result.success) {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to sign out",
+          variant: "destructive",
+        })
+        return
       }
 
-      router.push('/auth/login');
+      // Redirect to login page on successful logout
+      router.push('/auth/login')
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('Error during logout:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
     }
   }
 
@@ -371,6 +379,6 @@ export function Sidebar({ children }: SidebarProps) {
     </div>
   )
 }
-
 // Export as default for dynamic import
 export default Sidebar
+

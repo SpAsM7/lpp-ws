@@ -1,6 +1,12 @@
 import { Suspense } from "react"
 import { VerifyForm } from "../_components/verify-form"
 import { AuthLoading } from "@/components/loading/auth-loading"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Verify Email",
+  description: "Verify your email address to continue",
+}
 
 export default function VerifyPage() {
   return (

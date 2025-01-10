@@ -2,100 +2,104 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { cn } from "@/lib/features/ui/utils/styles"
+
+import { Alert } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Skeleton } from "@/components/ui/skeleton"
+import { cn } from "@/lib/features/ui/utils/styles"
+import { Icons } from "@/components/ui/icons"
+import { useToast } from "@/components/ui/use-toast"
+import { verifyEmailAction } from "@/lib/actions/auth/verify-email"
+import { AUTH_ERRORS } from "@/lib/errors/auth"
 
-const verifyFormSchema = z.object({
-  token: z.string().min(1, "Verification code is required"),
-})
+const VERIFY_MESSAGES = {
+  signup: "Your email has been verified. You can now log in.",
+  invite: "Your account has been verified. You can now log in.",
+  recovery: "Your email has been verified. You can now reset your password.",
+} as const
 
-type VerifyFormValues = z.infer<typeof verifyFormSchema>
+const EXPIRED_MESSAGES = {
+  signup: "Your verification link has expired. Please sign up again.",
+  invite: "Your verification link has expired. Please sign up again.",
+  recovery: "Your password reset link has expired. Please request a new one.",
+} as const
 
-interface VerifyFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface VerifyFormProps extends React.HTMLAttributes<HTMLDivElement> {
+  token: string
+  type: "signup" | "invite" | "recovery"
+}
 
-export function VerifyForm({ className, ...props }: VerifyFormProps) {
+export function VerifyForm({ className, token, type, ...props }: VerifyFormProps) {
+  const { toast } = useToast()
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<VerifyFormValues>({
-    resolver: zodResolver(verifyFormSchema),
-    defaultValues: {
-      token: "",
-    },
-  })
-
-  async function onSubmit(data: VerifyFormValues) {
+  const onSubmit = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: data.token,
-          type: "signup",
-        }),
-      })
+      const result = await verifyEmailAction({ token, type })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to verify email")
+      if (!result.success) {
+        // Special case: If token is expired/invalid, redirect to signup
+        if (result.error?.includes("token")) {
+          toast({
+            title: "Invalid or Expired Link",
+            description: EXPIRED_MESSAGES[type],
+            variant: "destructive",
+          })
+          router.push(type === "recovery" ? '/auth/reset-password' : '/auth/signup')
+          return
+        }
+
+        setError(result.error || AUTH_ERRORS.INVALID_REQUEST.message)
+        return
       }
 
-      router.push("/auth/login")
+      toast({
+        title: "Success",
+        description: VERIFY_MESSAGES[type],
+        variant: "success",
+      })
+
+      // Redirect based on verification type
+      router.push(type === "recovery" ? '/auth/update-password' : '/auth/login')
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Something went wrong")
+      console.error("Error verifying email:", error)
+      setError(error instanceof Error ? error.message : AUTH_ERRORS.INVALID_REQUEST.message)
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className={cn("grid gap-6", className)} {...props}>
+        <div className="grid gap-4">
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={cn("grid gap-6", className)} {...props}>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <FormField
-            control={form.control}
-            name="token"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Verification Code</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="Enter verification code"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Verifying..." : "Verify Email"}
-          </Button>
-        </form>
-      </Form>
+      <div className="grid gap-4">
+        {error && (
+          <Alert variant="destructive">
+            {error}
+          </Alert>
+        )}
+        <Button 
+          onClick={onSubmit} 
+          disabled={isLoading}
+          className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          Verify Email
+        </Button>
+      </div>
     </div>
   )
 }

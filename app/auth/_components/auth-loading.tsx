@@ -15,9 +15,12 @@ export function AuthLoading() {
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <a href="/login" className="text-sm text-primary hover:underline">
-          Return to login
-        </a>
+        <p className="text-sm text-muted-foreground">
+          Having trouble?{" "}
+          <a href="/auth/login" className="text-sm text-primary hover:underline">
+            Return to login
+          </a>
+        </p>
       </div>
     )
   }

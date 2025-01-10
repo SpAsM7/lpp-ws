@@ -13,24 +13,12 @@ export default async function AuthLayout({
   const supabase = await createClient()
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
 
-  // Get the current path
-  const pathname = headersList.get("x-invoke-path") || ""
-  const isCallback = pathname.endsWith("/callback")
-
-  // For callback route, render children directly without layout
-  if (isCallback) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        {children}
-      </div>
-    )
-  }
-
-  // Only redirect if not in callback route
-  if (session && !isCallback) {
+  // Redirect to home if authenticated
+  if (user && !error) {
     redirect("/home")
   }
 

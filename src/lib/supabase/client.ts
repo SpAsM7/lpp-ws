@@ -1,12 +1,15 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+/**
+ * Client-side Supabase client for use in Client Components.
+ * This client runs in the browser and handles client-side auth state.
+ */
+import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase credentials")
-  }
-
-  return createSupabaseClient(supabaseUrl, supabaseKey)
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 }
+
+// Export the singleton instance
+export const supabase = createClient()

@@ -1,7 +1,35 @@
 import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-// This page will never be rendered because middleware
-// will redirect to either /(auth)/login or /(dashboard)/home
-export default function RootPage() {
-  redirect("/auth/login");
+export default async function RootPage() {
+  // Create Supabase client
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set(name, value, options);
+        },
+        remove(name: string, options: any) {
+          cookieStore.delete(name);
+        },
+      },
+    }
+  );
+
+  // Check session
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // Redirect based on auth status
+  if (session) {
+    redirect("/home");
+  } else {
+    redirect("/auth/login");
+  }
 }

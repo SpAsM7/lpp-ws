@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Alert } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -11,47 +11,56 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/features/ui/utils/styles"
 import { Icons } from "@/components/ui/icons"
-import { magicLinkSchema, type MagicLinkInput } from "@/lib/supabase/auth/validations"
-import { useToast } from "@/lib/features/notifications/use-toast"
+import { resetRequestSchema, type ResetRequestInput } from "@/types/auth"
+import { useToast } from "@/components/ui/use-toast"
+import { createResetRequestAction } from "@/lib/actions/auth/create-reset-request"
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ResetPasswordFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
+export function ResetPasswordForm({ className, ...props }: ResetPasswordFormProps) {
   const { toast } = useToast()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<MagicLinkInput>({
-    resolver: zodResolver(magicLinkSchema),
+    formState: { errors },
+  } = useForm<ResetRequestInput>({
+    resolver: zodResolver(resetRequestSchema),
   })
 
-  const onSubmit = async (data: MagicLinkInput) => {
-    try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
+  const onSubmit = async (data: ResetRequestInput) => {
+    setIsLoading(true)
 
-      if (!response.ok) {
-        throw new Error("Failed to send reset password email")
+    try {
+      const result = await createResetRequestAction(data)
+
+      if (!result.success) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+        return
       }
 
       toast({
         title: "Check your email",
-        description: "We've sent you a password reset link",
+        description: "We've sent you a password reset link.",
         variant: "success",
       })
+
+      router.push('/auth/login')
     } catch (error) {
-      console.error("Error sending reset password email:", error)
+      console.error("Error requesting password reset:", error)
       toast({
         title: "Error",
-        description: "Failed to send reset password email. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send reset link",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -59,11 +68,6 @@ export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="grid gap-4">
-          {errors.root?.message && (
-            <Alert variant="destructive">
-              {errors.root.message}
-            </Alert>
-          )}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -73,7 +77,7 @@ export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
                 type="email"
                 placeholder="name@company.com"
                 autoComplete="email"
-                disabled={isSubmitting}
+                disabled={isLoading}
                 {...register("email")}
                 className={cn(
                   "pl-10",
@@ -82,25 +86,19 @@ export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.email.message}
+              </p>
             )}
           </div>
-          <Button disabled={isSubmitting}>
-            {isSubmitting && (
+          <Button disabled={isLoading}>
+            {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
             Send Reset Link
           </Button>
         </div>
       </form>
-      <p className="text-center text-sm text-muted-foreground">
-        <Link
-          href="/auth/login"
-          className="hover:text-brand underline underline-offset-4"
-        >
-          Back to Login
-        </Link>
-      </p>
     </div>
   )
 }

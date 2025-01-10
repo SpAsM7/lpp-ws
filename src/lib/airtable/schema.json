@@ -1,0 +1,1176 @@
+{
+  "tables": [
+    {
+      "id": "tblEyO6PHeFXuxq4F",
+      "name": "users",
+      "primaryFieldId": "fldWPMMtZlwHcYhNy",
+      "fields": [
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "CONCATENATE({fld0Mx7yDLmxxMrMZ},\" \",{fld20sjk2B7OplwmZ})",
+            "referencedFieldIds": [
+              "fld0Mx7yDLmxxMrMZ",
+              "fld20sjk2B7OplwmZ"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldWPMMtZlwHcYhNy",
+          "name": "user_title",
+          "description": "title of the record, used to identify the record in the visual editor"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fld0Mx7yDLmxxMrMZ",
+          "name": "name_first",
+          "description": "first name of the user"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fld20sjk2B7OplwmZ",
+          "name": "name_last",
+          "description": "last name of the user"
+        },
+        {
+          "type": "email",
+          "id": "fldq4Bi4mpUMF7ejZ",
+          "name": "email",
+          "description": "email of the user"
+        },
+        {
+          "type": "phoneNumber",
+          "id": "fldT8wpX5lEMjo3jU",
+          "name": "phone",
+          "description": "phone number of the user"
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblYH2nKYwfVwKVqu",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fld6V1lBAtku96dw4"
+          },
+          "id": "fldNto519hiKXTUxg",
+          "name": "roles",
+          "description": "this is the link to the role records associated with this user. A single user can be associated with multiple roles."
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldNto519hiKXTUxg",
+            "fieldIdInLinkedTable": "fldAxGqlIf6qXzlPE",
+            "result": {
+              "type": "multipleRecordLinks",
+              "options": {
+                "isReversed": false,
+                "prefersSingleRecordLink": false
+              }
+            }
+          },
+          "id": "fldE58yblqWZxR6XP",
+          "name": "account",
+          "description": "This is a lookup for the account in the roles table based on the linked role record listed in this table."
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldP39DbWWurkj1X3",
+          "name": "user_id",
+          "description": "random, unique ID for each user"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwQ7K5FErjNvBkFB",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    },
+    {
+      "id": "tblYH2nKYwfVwKVqu",
+      "name": "roles",
+      "primaryFieldId": "fld8XsB4SSDpKOu6x",
+      "fields": [
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "CONCATENATE({fld6V1lBAtku96dw4},\" - \",{fldAxGqlIf6qXzlPE},\" - \",{fld04pQC7tdA3RFyU})",
+            "referencedFieldIds": [
+              "fld6V1lBAtku96dw4",
+              "fldAxGqlIf6qXzlPE",
+              "fld04pQC7tdA3RFyU"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fld8XsB4SSDpKOu6x",
+          "name": "role_title",
+          "description": "title of the record, used to identify the record in the visual editor"
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblEyO6PHeFXuxq4F",
+            "isReversed": false,
+            "prefersSingleRecordLink": true,
+            "inverseLinkFieldId": "fldNto519hiKXTUxg"
+          },
+          "id": "fld6V1lBAtku96dw4",
+          "name": "user",
+          "description": "this is the link to the user record associated with this role record. A single role can be associated with only 1 user."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblQO83c4VTSkyYFi",
+            "isReversed": false,
+            "prefersSingleRecordLink": true,
+            "inverseLinkFieldId": "fldPFrL4h2qeONtQh"
+          },
+          "id": "fldAxGqlIf6qXzlPE",
+          "name": "account",
+          "description": "this is the link to the account record associated with this role record. A single role can be associated with only 1 account."
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "selOq16nPlM71pacG",
+                "name": "Owner",
+                "color": "blueLight2"
+              },
+              {
+                "id": "sel7bcdPdz7xGWr8a",
+                "name": "Admin",
+                "color": "cyanLight2"
+              },
+              {
+                "id": "sellUURK49TSeaDSF",
+                "name": "Viewer",
+                "color": "tealLight2"
+              }
+            ]
+          },
+          "id": "fld04pQC7tdA3RFyU",
+          "name": "role",
+          "description": "Single select option to define the type of role. Options are Owner, Admin and Viewer."
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fld6V1lBAtku96dw4",
+            "fieldIdInLinkedTable": "fldq4Bi4mpUMF7ejZ",
+            "result": {
+              "type": "email"
+            }
+          },
+          "id": "fldgSZla7Shee6QoS",
+          "name": "Email",
+          "description": "This is a lookup for the email in the user table based on the linked user record listed in this table."
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fld6V1lBAtku96dw4",
+            "fieldIdInLinkedTable": "fldP39DbWWurkj1X3",
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldqHSP8sIQcsZHx0",
+          "name": "user_id",
+          "description": "unique user id"
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldAxGqlIf6qXzlPE",
+            "fieldIdInLinkedTable": "fldzglPsjSiWHsd0K",
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldq8pQWspv9H0Rpd",
+          "name": "account_name"
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldAxGqlIf6qXzlPE",
+            "fieldIdInLinkedTable": "fldQrC8BG5QyPOP5g",
+            "result": {
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "id": "sel8HlPgJtN55zyAl",
+                    "name": "Personal",
+                    "color": "blueLight2"
+                  },
+                  {
+                    "id": "selNqQowf6FSAWj1o",
+                    "name": "Entity",
+                    "color": "cyanLight2"
+                  },
+                  {
+                    "id": "selmI6xPoBgWY4ZgR",
+                    "name": "Retirement",
+                    "color": "tealLight2"
+                  },
+                  {
+                    "id": "selsvGFqUTVWzIX3e",
+                    "name": "Other",
+                    "color": "greenLight2"
+                  }
+                ]
+              }
+            }
+          },
+          "id": "fld0gpd0e89Emz9ad",
+          "name": "account_type"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwzg6rqDLr0xvfXN",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    },
+    {
+      "id": "tblQO83c4VTSkyYFi",
+      "name": "accounts",
+      "primaryFieldId": "fldhmWgG0MozxiSsc",
+      "fields": [
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "SUBSTITUTE(REGEX_REPLACE({fldzglPsjSiWHsd0K}, \"\\\\s*(LLC|L\\\\.P\\\\.).*$\", \"\"), \",\", \"\")",
+            "referencedFieldIds": [
+              "fldzglPsjSiWHsd0K"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldhmWgG0MozxiSsc",
+          "name": "account_title",
+          "description": "title of the record, used to identify the record in the visual editor"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldzglPsjSiWHsd0K",
+          "name": "account_name",
+          "description": "this is the name of the account"
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldPFrL4h2qeONtQh",
+            "fieldIdInLinkedTable": "fld6V1lBAtku96dw4",
+            "result": {
+              "type": "multipleRecordLinks",
+              "options": {
+                "isReversed": false,
+                "prefersSingleRecordLink": false
+              }
+            }
+          },
+          "id": "fld1612SsaJNEOJY1",
+          "name": "Owner",
+          "description": "This is a lookup for all the owner role associated with the account based on the linked role record listed in this table. An account can have only 1 owner."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblYH2nKYwfVwKVqu",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fldAxGqlIf6qXzlPE"
+          },
+          "id": "fldPFrL4h2qeONtQh",
+          "name": "roles",
+          "description": "this is the link to the roles record associated with this account record. Multiple roles records can be associated with a single account record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblwlB16XvkIbpq56",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "flduDcvGYUmQfCp4o"
+          },
+          "id": "fldqD0S1CAPIH2ZUF",
+          "name": "investments",
+          "description": "this is the link to the investment record associated with this account record. Multiple investment records can be associated with a single account record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblrZGcCTKb9GT7uo",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fldLYinaE8Fr81B21"
+          },
+          "id": "fldEucSAIJL0MHNvy",
+          "name": "files",
+          "description": "this is the link to the file record associated with this account record. Multiple file records can be associated with a single account record."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldqD0S1CAPIH2ZUF",
+            "fieldIdInLinkedTable": "fld23036GcKwY7XWQ",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "currency",
+              "options": {
+                "precision": 0,
+                "symbol": "$"
+              }
+            }
+          },
+          "id": "fld0x8zTMbh3kWp8S",
+          "name": "Deployed",
+          "description": "This is a sum of all capital invested based on every investment record linked to this accounts record."
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldPFrL4h2qeONtQh",
+            "fieldIdInLinkedTable": "fldgSZla7Shee6QoS",
+            "result": {
+              "type": "email"
+            }
+          },
+          "id": "fld5lMuy6cwZXWgeF",
+          "name": "email_by_account",
+          "description": "This is a lookup for all the emails in the roles table based on the linked role record listed in this table."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldPFrL4h2qeONtQh",
+            "fieldIdInLinkedTable": "fldqHSP8sIQcsZHx0",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldG0T68w2LZdfMMI",
+          "name": "user_id",
+          "description": "list of unique user id's for all users associated with record"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "sel8HlPgJtN55zyAl",
+                "name": "Personal",
+                "color": "blueLight2"
+              },
+              {
+                "id": "selNqQowf6FSAWj1o",
+                "name": "Entity",
+                "color": "cyanLight2"
+              },
+              {
+                "id": "selmI6xPoBgWY4ZgR",
+                "name": "Retirement",
+                "color": "tealLight2"
+              },
+              {
+                "id": "selsvGFqUTVWzIX3e",
+                "name": "Other",
+                "color": "greenLight2"
+              }
+            ]
+          },
+          "id": "fldQrC8BG5QyPOP5g",
+          "name": "account_type",
+          "description": "Single select option to define the type of account. Options are Individual and Entity."
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "seldO26kanKmxokqe",
+                "name": "Individual Account",
+                "color": "blueLight2"
+              },
+              {
+                "id": "selDfJlxmI5SkcIz3",
+                "name": "Joint Account",
+                "color": "cyanLight2"
+              },
+              {
+                "id": "selEQHuMfGFz4KBaY",
+                "name": "Limited Liability Company (LLC)",
+                "color": "tealLight2"
+              },
+              {
+                "id": "sel9m956oUroa6h6i",
+                "name": "Trust",
+                "color": "greenLight2"
+              },
+              {
+                "id": "sel4RMMbn7YGgUd7I",
+                "name": "Partnership",
+                "color": "yellowLight2"
+              },
+              {
+                "id": "seledgdMuIKePGWzV",
+                "name": "Corporation",
+                "color": "orangeLight2"
+              },
+              {
+                "id": "selY66BSIIXhgQksf",
+                "name": "Non-Profit",
+                "color": "redLight2"
+              },
+              {
+                "id": "selV7W8XVgNGbVPXu",
+                "name": "Other entity",
+                "color": "pinkLight2"
+              },
+              {
+                "id": "selCLGt8PdCn5vOhs",
+                "name": "Individual Retirement Account (IRA)",
+                "color": "purpleLight2"
+              },
+              {
+                "id": "sel4drHNKjWFOdnco",
+                "name": "401(k) Plan",
+                "color": "grayLight2"
+              },
+              {
+                "id": "sel8Uo8J8Q1Nzcgek",
+                "name": "Special",
+                "color": "blueLight1"
+              }
+            ]
+          },
+          "id": "fldmHx5CLwF7y56hZ",
+          "name": "account_subtype"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwEd0ePCRc8axYzs",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    },
+    {
+      "id": "tblwlB16XvkIbpq56",
+      "name": "investments",
+      "primaryFieldId": "fldYk69r2jADkmEfZ",
+      "fields": [
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "LEFT({flduDcvGYUmQfCp4o}, 10) & \" - $\" & {fld23036GcKwY7XWQ}",
+            "referencedFieldIds": [
+              "flduDcvGYUmQfCp4o",
+              "fld23036GcKwY7XWQ"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldYk69r2jADkmEfZ",
+          "name": "investment_title",
+          "description": "title of the record, used to identify the record in the visual editor"
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "flduDcvGYUmQfCp4o",
+            "fieldIdInLinkedTable": "fldzglPsjSiWHsd0K",
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fld1JqeDNLc1DvjFX",
+          "name": "account_name",
+          "description": "This is a lookup for all the account name in the account table based on the linked account record listed in this table."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblQO83c4VTSkyYFi",
+            "isReversed": false,
+            "prefersSingleRecordLink": true,
+            "inverseLinkFieldId": "fldqD0S1CAPIH2ZUF"
+          },
+          "id": "flduDcvGYUmQfCp4o",
+          "name": "account",
+          "description": "this is the link to the account record associated with this investment record. Only 1 account record can be associated with an investment record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblXvdDlsM2GtKofQ",
+            "isReversed": false,
+            "prefersSingleRecordLink": true,
+            "inverseLinkFieldId": "fldBvA6KIgq0rhkhd"
+          },
+          "id": "fldMLWXyh81MFsogM",
+          "name": "portco",
+          "description": "this is the link to the portco record associated with this investment record. Only 1 portco record can be associated with an investment record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblrZGcCTKb9GT7uo",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fldP5b4bs3O9q7cnX"
+          },
+          "id": "fldDJYcXZtJn1HMuY",
+          "name": "files"
+        },
+        {
+          "type": "currency",
+          "options": {
+            "precision": 0,
+            "symbol": "$"
+          },
+          "id": "fld23036GcKwY7XWQ",
+          "name": "Capital",
+          "description": "This is the amount of capital invested for this investment record."
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fld8H6iaK99FDbiFR",
+          "name": "Units",
+          "description": "Number of units the investment owns"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "sel7KhPJnXbty56w9",
+                "name": "Zook",
+                "color": "blueLight2"
+              },
+              {
+                "id": "selDwtYtzKN54QHfH",
+                "name": "Tdata",
+                "color": "cyanLight2"
+              },
+              {
+                "id": "seldkrybznSKg2lts",
+                "name": "Series 1",
+                "color": "tealLight2"
+              }
+            ]
+          },
+          "id": "fldNFcSwjcvZB7IhH",
+          "name": "Series",
+          "description": "Single select option to define the series of investment. Because an account may make multiple investments into the same portco over time, this indicates the series."
+        },
+        {
+          "type": "date",
+          "options": {
+            "dateFormat": {
+              "name": "local",
+              "format": "l"
+            }
+          },
+          "id": "fld0CVOYeqogCNdgE",
+          "name": "Inv_date",
+          "description": "This is the date the investment was made."
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "flduDcvGYUmQfCp4o",
+            "fieldIdInLinkedTable": "fld5lMuy6cwZXWgeF",
+            "result": {
+              "type": "email"
+            }
+          },
+          "id": "fldFPHoRITyK3AsW5",
+          "name": "email_by_investment",
+          "description": "This is a lookup for all the emails in the accounts table based on the linked accounts record listed in this table."
+        },
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "{fld8H6iaK99FDbiFR}/{fldzIdXvgLnSHoaqo}",
+            "referencedFieldIds": [
+              "fld8H6iaK99FDbiFR",
+              "fldzIdXvgLnSHoaqo"
+            ],
+            "result": {
+              "type": "percent",
+              "options": {
+                "precision": 1
+              }
+            }
+          },
+          "id": "fld8A9tZzbHiHM5pc",
+          "name": "Investco_ownership",
+          "description": "The share of ownership the investment represents based on units allocated from total units."
+        },
+        {
+          "type": "multipleLookupValues",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldMLWXyh81MFsogM",
+            "fieldIdInLinkedTable": "fldMMUzDSShRfzfK5",
+            "result": {
+              "type": "number",
+              "options": {
+                "precision": 0
+              }
+            }
+          },
+          "id": "fldzIdXvgLnSHoaqo",
+          "name": "Total Units",
+          "description": "This is a lookup for all sum total of the units in the portco table based on the linked portco record listed in this table."
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "sel0P0TDw1UpN7OHU",
+                "name": "Cash",
+                "color": "blueLight2"
+              },
+              {
+                "id": "selKRTwN39SIbUSvf",
+                "name": "In-kind",
+                "color": "cyanLight2"
+              }
+            ]
+          },
+          "id": "fldKCUoNSDpV5wlUG",
+          "name": "Method",
+          "description": "Single select option to define the type of investment method. Options are Cash and In-kind."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "flduDcvGYUmQfCp4o",
+            "fieldIdInLinkedTable": "fldG0T68w2LZdfMMI",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldSjM6oI51aJmjr3",
+          "name": "user_id",
+          "description": "list of unique user id's for all users associated with record"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwfLJomPkTM4dJ7j",
+          "name": "Grid view",
+          "type": "grid"
+        },
+        {
+          "id": "viwyp8zN6ikuvfUbz",
+          "name": "By Series",
+          "type": "grid"
+        }
+      ]
+    },
+    {
+      "id": "tblXvdDlsM2GtKofQ",
+      "name": "portcos",
+      "primaryFieldId": "fldKruU2uexjdknRu",
+      "fields": [
+        {
+          "type": "singleLineText",
+          "id": "fldKruU2uexjdknRu",
+          "name": "portco_name",
+          "description": "Name of the portco entity. Also the title of the record, used to identify the record in the visual editor. "
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblwlB16XvkIbpq56",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fldMLWXyh81MFsogM"
+          },
+          "id": "fldBvA6KIgq0rhkhd",
+          "name": "investments",
+          "description": "this is the link to the investment record associated with this portco record. Multiple investment records can be associated with a portco record."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldBvA6KIgq0rhkhd",
+            "fieldIdInLinkedTable": "fld23036GcKwY7XWQ",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "currency",
+              "options": {
+                "precision": 0,
+                "symbol": "$"
+              }
+            }
+          },
+          "id": "fldCLzAlu2LHrsPQd",
+          "name": "Capital",
+          "description": "This is a sum of all capital invested based on every investment record linked to this portco record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblrZGcCTKb9GT7uo",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fldRsUdlF6Jei2Iya"
+          },
+          "id": "fldWyYjEvAkrr2bi3",
+          "name": "files",
+          "description": "this is the link to the file record associated with this portco record. Multiple file records can be associated with a single portco record."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldBvA6KIgq0rhkhd",
+            "fieldIdInLinkedTable": "fldFPHoRITyK3AsW5",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldQo9152wcoc5ryq",
+          "name": "email_by_portco",
+          "description": "This is the aggregation of all emails based on every investment record linked to this portco record."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldBvA6KIgq0rhkhd",
+            "fieldIdInLinkedTable": "fld8H6iaK99FDbiFR",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "number",
+              "options": {
+                "precision": 0
+              }
+            }
+          },
+          "id": "fldMMUzDSShRfzfK5",
+          "name": "Units",
+          "description": "This is a sum of all units allocated invested based on every investment record linked to this portco record."
+        },
+        {
+          "type": "percent",
+          "options": {
+            "precision": 1
+          },
+          "id": "fldbqozyVgMj98MvU",
+          "name": "Ownership",
+          "description": "This is the share of ownership that the units represent."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldBvA6KIgq0rhkhd",
+            "fieldIdInLinkedTable": "fldSjM6oI51aJmjr3",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldjjmwQw0JSvJ8xX",
+          "name": "user_id",
+          "description": "list of unique user id's for all users associated with record"
+        },
+        {
+          "type": "url",
+          "id": "fldD8AaozKflj8Thd",
+          "name": "website",
+          "description": "website URL of the portco"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldWu1R0SyHwA8ht2",
+          "name": "description",
+          "description": "description of the portco"
+        },
+        {
+          "type": "multipleAttachments",
+          "options": {
+            "isReversed": false
+          },
+          "id": "fldtE5NIVRrzsISKc",
+          "name": "logo",
+          "description": "logo of the portco"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldpKIngrL1yTI0ep",
+          "name": "rev_start_year",
+          "description": "The year represented by rev_y1"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fldgQHuZWrQvDD3BC",
+          "name": "rev_y1",
+          "description": "revenue for year 1"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fldd6z82xY2EeLiMr",
+          "name": "rev_y2",
+          "description": "revenue for year 2"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fldC9VbUREt3pqYS0",
+          "name": "rev_y3",
+          "description": "revenue for year 3"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fldwIr0yNqxa0JyYp",
+          "name": "rev_y4",
+          "description": "revenue for year 4"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldHExH2XsKOuM1Ok",
+          "name": "rev_units",
+          "description": "units of the values in the rev chart"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwSGFIoWK1fPtkhL",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    },
+    {
+      "id": "tblrZGcCTKb9GT7uo",
+      "name": "files",
+      "primaryFieldId": "fld45rcCg5KgzaKGP",
+      "fields": [
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "{fldOCBHbsnZfNpIwL}",
+            "referencedFieldIds": [
+              "fldOCBHbsnZfNpIwL"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fld45rcCg5KgzaKGP",
+          "name": "file_title",
+          "description": "title of the record, used to identify the record in the visual editor"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldOCBHbsnZfNpIwL",
+          "name": "file_name",
+          "description": "This is the name of the file"
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblXvdDlsM2GtKofQ",
+            "isReversed": false,
+            "prefersSingleRecordLink": true,
+            "inverseLinkFieldId": "fldWyYjEvAkrr2bi3"
+          },
+          "id": "fldRsUdlF6Jei2Iya",
+          "name": "portco",
+          "description": "this is the link to the portco records associated with this file record. Multiple portco records can be associated with a single file record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblQO83c4VTSkyYFi",
+            "isReversed": false,
+            "prefersSingleRecordLink": true,
+            "inverseLinkFieldId": "fldEucSAIJL0MHNvy"
+          },
+          "id": "fldLYinaE8Fr81B21",
+          "name": "account",
+          "description": "this is the link to the account records associated with this file record. Multiple account records can be associated with a single file record."
+        },
+        {
+          "type": "multipleRecordLinks",
+          "options": {
+            "linkedTableId": "tblwlB16XvkIbpq56",
+            "isReversed": false,
+            "prefersSingleRecordLink": false,
+            "inverseLinkFieldId": "fldDJYcXZtJn1HMuY"
+          },
+          "id": "fldP5b4bs3O9q7cnX",
+          "name": "investment",
+          "description": "this is the link to the investment records associated with this file record. Multiple investment records can be associated with a single file record."
+        },
+        {
+          "type": "multipleAttachments",
+          "options": {
+            "isReversed": false
+          },
+          "id": "fldcO5MG4l8kmJykd",
+          "name": "document",
+          "description": "This is the storage field where files are saved."
+        },
+        {
+          "type": "multipleSelects",
+          "options": {
+            "choices": [
+              {
+                "id": "selSW3uER1DGUDPOV",
+                "name": "memo"
+              },
+              {
+                "id": "selDCpWCxgOsET6sd",
+                "name": "teaser"
+              },
+              {
+                "id": "selXqVz6hW4SC1KIp",
+                "name": "newsletter"
+              }
+            ]
+          },
+          "id": "fldRxpDgHrLkfzBqc",
+          "name": "Tags",
+          "description": "Multi-select field used for simplifying user searches for files."
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "sel4fJsiLJDNcid9O",
+                "name": "staging",
+                "color": "blueLight2"
+              },
+              {
+                "id": "seliBaf394S3MKWa2",
+                "name": "available",
+                "color": "greenLight2"
+              },
+              {
+                "id": "selnb0nV0BFMEgdl6",
+                "name": "delete",
+                "color": "redLight2"
+              }
+            ]
+          },
+          "id": "fld5WUnicYRve2cz6",
+          "name": "status",
+          "description": "Single select option to define the process stage of the file. Options are staging, available and delete."
+        },
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "IF(OR(FIND('staging', {fld5WUnicYRve2cz6} & ''), AND(NOT({fldRsUdlF6Jei2Iya}), NOT({fldLYinaE8Fr81B21}))), 'admin_only', IF({fldLYinaE8Fr81B21}, 'account_specific', IF({fldRsUdlF6Jei2Iya}, 'portco_specific', '')))",
+            "referencedFieldIds": [
+              "fld5WUnicYRve2cz6",
+              "fldRsUdlF6Jei2Iya",
+              "fldLYinaE8Fr81B21"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldnSET6FE4dj77X9",
+          "name": "access",
+          "description": "Labels records based on the presence of account, portco, and status fields. Field is used for extra security to make sure files are not available to the wrong user."
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldLYinaE8Fr81B21",
+            "fieldIdInLinkedTable": "fldG0T68w2LZdfMMI",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "flduJhOIt4aICutCc",
+          "name": "user_id_acc",
+          "description": "list of unique user id's for all users associated with record from the accounts table"
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldRsUdlF6Jei2Iya",
+            "fieldIdInLinkedTable": "fldjjmwQw0JSvJ8xX",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldj6EzrlMSh7jp4F",
+          "name": "user_id_portco",
+          "description": "list of unique user id's for all users associated with record from the portco table"
+        },
+        {
+          "type": "rollup",
+          "options": {
+            "isValid": true,
+            "recordLinkFieldId": "fldP5b4bs3O9q7cnX",
+            "fieldIdInLinkedTable": "fldSjM6oI51aJmjr3",
+            "referencedFieldIds": [],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldC0FpnsCNbIOiSv",
+          "name": "user_id_invest",
+          "description": "list of unique user id's for all users associated with record from the investments table"
+        },
+        {
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "CONCATENATE(ARRAYJOIN({flduJhOIt4aICutCc},\",\"),\",\",ARRAYJOIN({fldj6EzrlMSh7jp4F},\",\"),\",\",ARRAYJOIN({fldC0FpnsCNbIOiSv},\",\"))",
+            "referencedFieldIds": [
+              "flduJhOIt4aICutCc",
+              "fldj6EzrlMSh7jp4F",
+              "fldC0FpnsCNbIOiSv"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
+          "id": "fldA3RyYhuFm9PiKY",
+          "name": "user_id",
+          "description": "Aggregates unique user IDs from three roll-up fields into a single list. The source fields are user_id_acc, user_id_invest, and user_id_portco"
+        },
+        {
+          "type": "date",
+          "options": {
+            "dateFormat": {
+              "name": "local",
+              "format": "l"
+            }
+          },
+          "id": "fld6HEOPJdvpzDnUf",
+          "name": "date"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwHdwxSJFPmIUYjQ",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    },
+    {
+      "id": "tblOVlZbAeu3jjoxg",
+      "name": "activities",
+      "primaryFieldId": "fldWksxwf0rCtKWjK",
+      "fields": [
+        {
+          "type": "singleLineText",
+          "id": "fldWksxwf0rCtKWjK",
+          "name": "Name",
+          "description": "title of the record, used to identify the record in the visual editor"
+        },
+        {
+          "type": "multilineText",
+          "id": "fld2C0SXN1tinPvSY",
+          "name": "Notes"
+        },
+        {
+          "type": "singleCollaborator",
+          "id": "fldaJo9cpP7bm0jAJ",
+          "name": "Assignee"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "selPHFpUK0LG1iUyK",
+                "name": "Todo",
+                "color": "redLight2"
+              },
+              {
+                "id": "selsweqKOlotlZYaJ",
+                "name": "In progress",
+                "color": "yellowLight2"
+              },
+              {
+                "id": "sel4zZcevu6INgydh",
+                "name": "Done",
+                "color": "greenLight2"
+              }
+            ]
+          },
+          "id": "fldQPbX93UYJagwc3",
+          "name": "Status"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwKfgO9F7l8wAvsk",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    }
+  ]
+}

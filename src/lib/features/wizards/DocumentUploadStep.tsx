@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Icons } from "@/components/ui/icons"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useWizard } from "@/lib/domains/accounts/contexts/account-wizard"
-import { useToast } from "@/lib/features/notifications/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import type { NewAccountFormData } from "@/lib/domains/accounts/schema"
 
 export function DocumentUploadStep() {
