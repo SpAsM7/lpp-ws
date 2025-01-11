@@ -52,7 +52,7 @@ This will:
      - All field types MUST be nullable (e.g., `string | null`)
      - Attachment fields MUST use:
        - Interface type: `{ url: string; filename: string; }[] | null`
-       - Schema type: `"attachment"`
+       - Schema type: `"attachments"`
      - Array fields MUST preserve nullability (e.g., `string[] | null`)
 
 2. `src/lib/airtable/schema.json`:
@@ -74,9 +74,21 @@ All Airtable operations MUST be server-side only. Key files and methods:
 - Location: `src/lib/actions/user-actions.ts`
 - Key Methods:
   - `getUserBySupabaseId()`: Fetch user profile by Supabase ID
+
 - Location: `src/lib/actions/user/get-current-user.ts`
 - Key Methods:
   - `getCurrentUser()`: Get current user profile combining Supabase auth and Airtable data
+
+### Authentication Integration
+
+1. **Session Management**
+   - MUST use Supabase's built-in session management via:
+     - Server: `createServerClient` from `@supabase/ssr` in `src/lib/supabase/server.ts`
+     - Client: `createBrowserClient` from `@supabase/ssr` in `src/lib/supabase/client.ts`
+     - Auth state: `auth.getUser()` for verification (not `getSession`)
+   - MUST NOT create custom session management hooks
+   - MUST use secure HTTP-only cookies only
+   - MUST use appropriate Supabase client based on context (server/client/middleware)
 
 ### Client Instance Management
 
@@ -132,6 +144,13 @@ All Airtable operations MUST be server-side only. Key files and methods:
   - MUST implement proper TypeScript types for all responses
   - MUST document side effects in JSDoc comments
 
+### React Query Pattern
+- MUST destructure hook results correctly with `data`, `isLoading`, and `error`
+- MUST use TypeScript data renaming syntax when aliasing the data field
+- MUST handle loading states with shadcn Skeleton components
+- MUST show appropriate error toasts on failure
+- MUST type the query response properly
+
 ### Error Handling
 - MUST use structured error types
 - MUST provide user-friendly error messages
@@ -165,3 +184,92 @@ All Airtable operations MUST be server-side only. Key files and methods:
 - Location: `src/lib/airtable/schema-fetcher.ts`
 - Key Methods:
   - `fetchSchema()`: Fetches and generates schema types
+
+## Type Safety Patterns
+
+### Three-Layer Type Safety
+
+All fields in our Airtable integration require three layers of type safety to work correctly:
+
+1. **Schema Definition** (for airtable-ts)
+   - Tells airtable-ts how to handle API interactions
+   - Uses simplified types that the library understands
+   ```ts
+   export const usersTable = {
+     schema: {
+       name: "string | null",
+       age: "number | null",
+       avatar: "string[] | null"  // Special case for attachments
+     }
+   } as const satisfies Table<UsersFields>;
+   ```
+
+2. **TypeScript Interface** (for compile-time type safety)
+   - Defines the exact shape of our data
+   - More specific than schema definitions
+   ```ts
+   export interface UsersFields extends BaseFields {
+     name?: string | null;
+     age?: number | null;
+     avatar?: { url: string; filename: string; }[] | null;  // More specific for attachments
+   }
+   ```
+
+3. **Zod Schema** (for runtime validation)
+   - Validates data at runtime
+   - Matches TypeScript interface structure
+   ```ts
+   export const UsersSchema = z.object({
+     name: z.string().nullable().optional(),
+     age: z.number().nullable().optional(),
+     avatar: z.optional(z.array(  // Complex validation for attachments
+       z.object({ 
+         url: z.string(), 
+         filename: z.string() 
+       })
+     ).nullable())
+   });
+   ```
+
+## Special Cases - Attachments
+
+**Attachments** are a notable example where these layers differ significantly:
+- Schema: Must use `"string[] | null"` (airtable-ts maps attachments to string arrays)
+- TypeScript: Must use `string[] | null` (matches schema type exactly)
+- Zod: Must use array validation with string elements:
+  ```ts
+  z.object({
+    id: z.string(),
+    avatar: z.optional(z.array(z.string()).nullable())
+  })
+  ```
+
+**Data Transformation Pattern**:
+- Keep types simple (`string[] | null`) in schema/interface/validation layers
+- Transform attachment data to include full details ONLY in the application layer:
+  ```ts
+  // In server actions or domain logic:
+  interface AttachmentDetails {
+    url: string;
+    filename: string;
+  }
+
+  function transformAttachmentData(data: string[] | null): AttachmentDetails[] | null {
+    if (!data) return null;
+    return data.map(attachment => ({
+      url: attachment,
+      filename: attachment.split('/').pop() || ''
+    }));
+  }
+  ```
+- This separation keeps the schema clean while preserving type safety where detailed data is needed
+
+Other field types (strings, numbers, etc.) have more straightforward mappings across the layers.
+
+The schema generator (`schema-fetcher.ts`) handles these mappings automatically for all field types, but it's crucial to understand this pattern when:
+- Debugging type errors
+- Adding new fields manually
+- Working with complex field types like attachments
+- Transforming data in the application layer
+
+**Breaking this pattern for any field type will cause type errors or runtime issues.**

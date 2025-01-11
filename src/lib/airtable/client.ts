@@ -72,6 +72,7 @@ const userTableSchema = z.object({
   name_first: z.string(),
   name_last: z.string(),
   email: z.string().email(),
+  avatar: z.array(z.string()).nullable().optional(),
 });
 
 export type UserTableRecord = z.infer<typeof userTableSchema>;
@@ -90,7 +91,7 @@ const db = new AirtableTs({
 /**
  * Users table definition with strongly-typed schema
  */
-const usersTable: Table<UserTableRecord> = {
+const usersTable = {
   name: 'users',
   baseId: config.baseId,
   tableId: config.tables.users,
@@ -99,7 +100,10 @@ const usersTable: Table<UserTableRecord> = {
     name_first: 'string',
     name_last: 'string',
     email: 'string',
+    avatar: 'string[] | null',
   },
+} as const satisfies Omit<Table<UserTableRecord>, 'schema'> & {
+  schema: Partial<Record<keyof UserTableRecord, string>>;
 };
 
 /**

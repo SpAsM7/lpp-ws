@@ -1,5 +1,5 @@
 // Auto-generated Airtable schema types
-// Generated on: 2025-01-10T21:34:05.493Z
+// Generated on: 2025-01-11T16:25:39.033Z
 
 import { Table } from 'airtable-ts';
 import { z } from 'zod';
@@ -19,7 +19,7 @@ export const UsersSchema = z.object({
   account: z.optional(z.any().nullable()),
   user_id: z.optional(z.string().nullable()),
   old_user_id: z.optional(z.string().nullable()),
-  avatar: z.optional(z.array(z.object({ url: z.string(), filename: z.string() })).nullable()),
+  avatar: z.optional(z.array(z.string()).nullable()),
 });
 
 export const RolesSchema = z.object({
@@ -79,7 +79,7 @@ export const PortcosSchema = z.object({
   user_id: z.optional(z.any().nullable()),
   website: z.optional(z.string().nullable()),
   description: z.optional(z.string().nullable()),
-  logo: z.optional(z.array(z.object({ url: z.string(), filename: z.string() })).nullable()),
+  logo: z.optional(z.array(z.string()).nullable()),
   rev_start_year: z.optional(z.string().nullable()),
   rev_y1: z.optional(z.number().nullable()),
   rev_y2: z.optional(z.number().nullable()),
@@ -95,7 +95,7 @@ export const FilesSchema = z.object({
   portco: z.optional(z.any().nullable()),
   account: z.optional(z.any().nullable()),
   investment: z.optional(z.any().nullable()),
-  document: z.optional(z.array(z.object({ url: z.string(), filename: z.string() })).nullable()),
+  document: z.optional(z.array(z.string()).nullable()),
   Tags: z.optional(z.array(z.string()).nullable()),
   status: z.optional(z.string().nullable()),
   access: z.optional(z.any().nullable()),
@@ -124,7 +124,7 @@ export interface UsersFields extends BaseFields {
   account?: any | null;
   user_id?: string | null;
   old_user_id?: string | null;
-  avatar?: { url: string; filename: string; }[] | null;
+  avatar?: string[] | null;
 }
 
 export const usersTable = {
@@ -141,7 +141,7 @@ export const usersTable = {
     account: "string | null",
     user_id: "string | null",
     old_user_id: "string | null",
-    avatar: "attachment",
+    avatar: "string[] | null",
   }
 } as const satisfies Table<UsersFields>;
 
@@ -255,7 +255,7 @@ export interface PortcosFields extends BaseFields {
   user_id?: any | null;
   website?: string | null;
   description?: string | null;
-  logo?: { url: string; filename: string; }[] | null;
+  logo?: string[] | null;
   rev_start_year?: string | null;
   rev_y1?: number | null;
   rev_y2?: number | null;
@@ -279,7 +279,7 @@ export const portcosTable = {
     user_id: "string | null",
     website: "string | null",
     description: "string | null",
-    logo: "attachment",
+    logo: "string[] | null",
     rev_start_year: "string | null",
     rev_y1: "number | null",
     rev_y2: "number | null",
@@ -295,7 +295,7 @@ export interface FilesFields extends BaseFields {
   portco?: any | null;
   account?: any | null;
   investment?: any | null;
-  document?: { url: string; filename: string; }[] | null;
+  document?: string[] | null;
   Tags?: string[] | null;
   status?: string | null;
   access?: any | null;
@@ -316,7 +316,7 @@ export const filesTable = {
     portco: "string | null",
     account: "string | null",
     investment: "string | null",
-    document: "attachment",
+    document: "string[] | null",
     Tags: "string[] | null",
     status: "string | null",
     access: "string | null",

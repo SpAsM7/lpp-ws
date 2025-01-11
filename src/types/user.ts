@@ -7,7 +7,7 @@ export const userProfileSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email format'),
   name: z.string(),
-  avatar: z.string().optional(),
+  avatar: z.string().nullable(),
 });
 
 // TypeScript type derived from the schema
@@ -20,7 +20,7 @@ export type NormalizedUserProfile = {
   lastName: string;
   email: string;
   name: string;
-  avatar?: string;
+  avatar: string | null;
 };
 
 // Type for user action responses

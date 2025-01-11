@@ -142,7 +142,7 @@ function getTypeScriptType(field: Field): string {
     case 'dateTime':
       return 'string | null'; // ISO date string
     case 'multipleAttachments':
-      return '{ url: string; filename: string; }[] | null';
+      return 'string[] | null';
     default:
       return 'any | null';
   }
@@ -171,7 +171,7 @@ function getSchemaType(field: Field): string {
     case 'dateTime':
       return 'string | null';
     case 'multipleAttachments':
-      return 'attachment';
+      return 'string[] | null';
     default:
       return 'string | null';
   }
@@ -201,7 +201,7 @@ function getZodType(field: Field): string {
       case 'dateTime':
         return 'z.string()'; // Could be z.date() if we want to parse
       case 'multipleAttachments':
-        return 'z.array(z.object({ url: z.string(), filename: z.string() }))';
+        return 'z.array(z.string())';
       default:
         return 'z.any()';
     }

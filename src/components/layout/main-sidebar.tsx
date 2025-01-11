@@ -65,6 +65,7 @@ import { createSignOutAction } from "@/lib/actions/auth/create-signout"
 import { useToast } from "@/components/ui/use-toast"
 import { useUserProfile } from "@/lib/domains/user/hooks/use-user-profile"
 import { Skeleton } from "@/components/ui/skeleton"
+import { UserAvatar } from "@/components/user/user-avatar"
 
 const data = {
   user: {
@@ -116,7 +117,7 @@ export function Sidebar({ children }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { toast } = useToast()
-  const { profile, isLoading, error } = useUserProfile()
+  const { data: profile, isLoading, error } = useUserProfile()
 
   React.useEffect(() => {
     setMounted(true)
@@ -303,21 +304,11 @@ export function Sidebar({ children }: SidebarProps) {
                         size="lg"
                         className="data-[state=open]:bg-accent data-[state=open]:text-primary"
                       >
-                        <Avatar className="h-8 w-8 rounded-lg shrink-0">
-                          {isLoading ? (
-                            <Skeleton className="h-8 w-8 rounded-lg" />
-                          ) : (
-                            <>
-                              <AvatarImage
-                                src={profile?.avatar}
-                                alt={profile ? `${profile.firstName} ${profile.lastName}` : undefined}
-                              />
-                              <AvatarFallback className="rounded-lg">
-                                {profile ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase() : '...'}
-                              </AvatarFallback>
-                            </>
-                          )}
-                        </Avatar>
+                        <UserAvatar
+                          profile={profile}
+                          isLoading={isLoading}
+                          className="shrink-0"
+                        />
                         <div className="grid flex-1 text-left text-sm leading-tight overflow-hidden transition-all group-[[data-collapsible=icon]]/sidebar:w-0">
                           <span className="truncate font-semibold">
                             {isLoading ? (
@@ -352,21 +343,10 @@ export function Sidebar({ children }: SidebarProps) {
                       </VisuallyHidden>
                       <DropdownMenuLabel className="p-0 font-normal">
                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                          <Avatar className="h-8 w-8 rounded-lg">
-                            {isLoading ? (
-                              <Skeleton className="h-8 w-8 rounded-lg" />
-                            ) : (
-                              <>
-                                <AvatarImage
-                                  src={profile?.avatar}
-                                  alt={profile ? `${profile.firstName} ${profile.lastName}` : undefined}
-                                />
-                                <AvatarFallback className="rounded-lg">
-                                  {profile ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase() : '...'}
-                                </AvatarFallback>
-                              </>
-                            )}
-                          </Avatar>
+                          <UserAvatar
+                            profile={profile}
+                            isLoading={isLoading}
+                          />
                           <div className="grid flex-1 text-left text-sm leading-tight">
                             <span className="truncate font-semibold">
                               {isLoading ? (

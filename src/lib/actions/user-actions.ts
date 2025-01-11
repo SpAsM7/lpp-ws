@@ -35,11 +35,6 @@ export async function getUserBySupabaseId(
       1
     );
     
-    logger.debug('getUserBySupabaseId.fetch.response', { 
-      supabaseId,
-      recordCount: users?.length ?? 0 
-    });
-    
     if (!users || users.length === 0) {
       logger.warn('getUserBySupabaseId.fetch.notFound', { supabaseId });
       return {
@@ -49,18 +44,19 @@ export async function getUserBySupabaseId(
     }
 
     const user = users[0];
-    const rawUser = {
+    
+    // Extract avatar URL from the first attachment if it exists
+    // We keep the schema simple (string[] | null) but Airtable returns objects
+    const avatarUrl: string | null = user.avatar?.[0] ?? null;
+    
+    const rawUser: NormalizedUserProfile = {
       id: user.id,
-      firstName: user.name_first,
-      lastName: user.name_last,
-      email: user.email,
-      name: `${user.name_first} ${user.name_last}`.trim(),
+      firstName: user.name_first ?? '',
+      lastName: user.name_last ?? '',
+      email: user.email ?? '',
+      name: `${user.name_first ?? ''} ${user.name_last ?? ''}`.trim(),
+      avatar: avatarUrl,
     };
-
-    logger.debug('getUserBySupabaseId.transform.complete', { 
-      supabaseId,
-      userId: user.id 
-    });
 
     // Validate the user data against our schema
     const validationResult = userProfileSchema.safeParse(rawUser);
