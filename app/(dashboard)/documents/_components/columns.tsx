@@ -5,32 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Icons } from "@/components/icons"
 import { Checkbox } from "@/components/ui/checkbox"
+import type { Document } from "@/lib/domains/documents/types"
+import { format } from "date-fns"
 
-/**
- * Represents a document in the documents table
- * @interface Document
- */
-export interface Document {
-  /** Unique identifier for the document */
-  id: string
-  /** Name of the document file */
-  file: string
-  /** Description of the document's contents */
-  description: string
-  /** Type of investment the document is related to */
-  investment: string
-  /** Account associated with the document */
-  account: string
-  /** Type of document */
-  type: "Report" | "Prospectus" | "Statement"
-  /** Date the document was created/uploaded */
-  date: string
-}
+export type { Document }
 
-/**
- * Column definitions for the documents table
- * Includes sorting, filtering, and custom cell rendering
- */
 export const columns: ColumnDef<Document>[] = [
   {
     id: "select",
@@ -59,7 +38,7 @@ export const columns: ColumnDef<Document>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "file",
+    accessorKey: "title",
     header: ({ column }) => {
       return (
         <div className="flex items-center">
@@ -68,7 +47,7 @@ export const columns: ColumnDef<Document>[] = [
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="-ml-4"
           >
-            File
+            Title
             <Icons.arrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         </div>
@@ -78,7 +57,7 @@ export const columns: ColumnDef<Document>[] = [
       return (
         <div className="flex items-center">
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue("file")}
+            {row.getValue("title")}
           </span>
         </div>
       )
@@ -86,7 +65,7 @@ export const columns: ColumnDef<Document>[] = [
     filterFn: "includesString",
   },
   {
-    accessorKey: "description",
+    accessorKey: "fileName",
     header: ({ column }) => {
       return (
         <div className="flex items-center">
@@ -95,79 +74,22 @@ export const columns: ColumnDef<Document>[] = [
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="-ml-4"
           >
-            Description
+            File Name
             <Icons.arrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         </div>
       )
     },
     cell: ({ row }) => {
+      const type = row.original.type?.[0] || 'Unknown';
       return (
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{row.original.type}</Badge>
+          <Badge variant="outline">{type}</Badge>
           <span className="max-w-[500px] truncate">
-            {row.getValue("description")}
+            {row.getValue("fileName")}
           </span>
         </div>
       )
-    },
-  },
-  {
-    accessorKey: "investment",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-4"
-          >
-            Investment
-            <Icons.arrowUpDown className="ml-2 h-3 w-3" />
-          </Button>
-        </div>
-      )
-    },
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center">
-          <span className="max-w-[500px] truncate">
-            {row.getValue("investment")}
-          </span>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-  },
-  {
-    accessorKey: "account",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-4"
-          >
-            Account
-            <Icons.arrowUpDown className="ml-2 h-3 w-3" />
-          </Button>
-        </div>
-      )
-    },
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center">
-          <span className="max-w-[500px] truncate">
-            {row.getValue("account")}
-          </span>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
     },
   },
   {
@@ -190,13 +112,14 @@ export const columns: ColumnDef<Document>[] = [
       return (
         <div className="flex items-center">
           <span className="max-w-[500px] truncate">
-            {row.getValue("type")}
+            {row.original.type?.[0] || 'Unknown'}
           </span>
         </div>
       )
     },
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
+      const type = row.original.type?.[0];
+      return type ? value.includes(type) : false;
     },
   },
   {
@@ -216,10 +139,11 @@ export const columns: ColumnDef<Document>[] = [
       )
     },
     cell: ({ row }) => {
+      const date = row.getValue("date") as string | null;
       return (
         <div className="flex items-center">
           <span className="max-w-[500px] truncate">
-            {new Date(row.getValue("date")).toLocaleDateString()}
+            {date ? format(new Date(date), 'PP') : 'No date'}
           </span>
         </div>
       )
@@ -228,9 +152,16 @@ export const columns: ColumnDef<Document>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
+      const documentUrl = row.original.documentUrl;
       return (
         <div className="flex items-center justify-center">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            disabled={!documentUrl}
+            onClick={() => documentUrl && window.open(documentUrl, '_blank')}
+          >
             <Icons.pinBottom className="h-4 w-4" />
             <span className="sr-only">Download</span>
           </Button>

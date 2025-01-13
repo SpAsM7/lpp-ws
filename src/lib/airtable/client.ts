@@ -65,6 +65,29 @@ export class AirtableError extends Error {
   }
 }
 
+// Cache the client instance at module level
+let airtableClient: AirtableTs | null = null;
+
+/**
+ * Get or create the Airtable client instance
+ * @throws {AirtableError} If configuration is invalid
+ */
+export function getAirtableClient(): AirtableTs {
+  if (airtableClient) {
+    return airtableClient;
+  }
+
+  const config = validateAirtableConfig();
+  airtableClient = new AirtableTs({
+    apiKey: config.apiKey,
+  });
+
+  return airtableClient;
+}
+
+// Export the config for use in table definitions
+export const config = validateAirtableConfig();
+
 // User table schema validation
 const userTableSchema = z.object({
   id: z.string(),
@@ -76,17 +99,6 @@ const userTableSchema = z.object({
 });
 
 export type UserTableRecord = z.infer<typeof userTableSchema>;
-
-// Validate configuration before initializing client
-const config = validateAirtableConfig();
-
-/**
- * Airtable client instance for making API calls
- * @throws {AirtableError} If used on client-side or if configuration is invalid
- */
-const db = new AirtableTs({
-  apiKey: config.apiKey,
-});
 
 /**
  * Users table definition with strongly-typed schema
@@ -115,7 +127,7 @@ const usersTable = {
  */
 export async function scanUsers(filterByFormula?: string, maxRecords?: number): Promise<UserTableRecord[]> {
   try {
-    return await db.scan(usersTable, {
+    return await getAirtableClient().scan(usersTable, {
       filterByFormula,
       maxRecords,
     });

@@ -1,7 +1,7 @@
 "use client"
 
 import { Table } from "@tanstack/react-table"
-
+import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Icons } from "@/components/icons"
@@ -12,72 +12,60 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import type { Document } from "@/lib/domains/documents/types"
 
 /**
  * Props for the DataTableToolbar component
  */
-interface DataTableToolbarProps<TData> {
+interface DataTableToolbarProps {
   /** The table instance from TanStack Table */
-  table: Table<TData>
+  table: Table<Document>
 }
 
 /**
  * DataTableToolbar component provides filtering and view options for the documents table
  * Includes:
  * - Text search for file names
- * - Faceted filters for investment, account, and document types
+ * - Document type filter from Airtable data
  * - Reset button for clearing filters
  * - View options button for column visibility
  */
-export function DataTableToolbar<TData>({
+export function DataTableToolbar({
   table,
-}: DataTableToolbarProps<TData>) {
+}: DataTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0
+
+  // Get unique document types from the data
+  const documentTypes = useMemo(() => {
+    const types = new Set<string>();
+    table.getFilteredRowModel().rows.forEach(row => {
+      const docTypes = row.original.type;
+      if (docTypes) {
+        docTypes.forEach(type => types.add(type));
+      }
+    });
+    return Array.from(types).map(type => ({
+      label: type,
+      value: type,
+    }));
+  }, [table.getFilteredRowModel().rows]);
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Search files..."
-          value={(table.getColumn("file")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("file")?.setFilterValue(event.target.value)
+            table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("investment") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("investment")}
-            title="Investment"
-            options={[
-              { value: "Stocks", label: "Stocks" },
-              { value: "Real Estate", label: "Real Estate" },
-              { value: "Bonds", label: "Bonds" },
-              { value: "Cryptocurrency", label: "Cryptocurrency" },
-            ]}
-          />
-        )}
-        {table.getColumn("account") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("account")}
-            title="Account"
-            options={[
-              { value: "Personal", label: "Personal" },
-              { value: "Joint", label: "Joint" },
-              { value: "IRA", label: "IRA" },
-              { value: "401(k)", label: "401(k)" },
-            ]}
-          />
-        )}
-        {table.getColumn("type") && (
+        {table.getColumn("type") && documentTypes.length > 0 && (
           <DataTableFacetedFilter
             column={table.getColumn("type")}
             title="Type"
-            options={[
-              { value: "Report", label: "Report" },
-              { value: "Prospectus", label: "Prospectus" },
-              { value: "Statement", label: "Statement" },
-            ]}
+            options={documentTypes}
           />
         )}
         {isFiltered && (

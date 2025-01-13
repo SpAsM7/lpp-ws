@@ -94,6 +94,12 @@
           },
           "id": "fldpg4jAxfYGFl5eO",
           "name": "avatar"
+        },
+        {
+          "type": "email",
+          "id": "fldIjVkB9dlToP3Nn",
+          "name": "save_e",
+          "description": "email of the user"
         }
       ],
       "views": [
@@ -728,10 +734,25 @@
       "primaryFieldId": "fldKruU2uexjdknRu",
       "fields": [
         {
-          "type": "singleLineText",
+          "type": "formula",
+          "options": {
+            "isValid": true,
+            "formula": "{fldN4TVLqfL52ZFex}",
+            "referencedFieldIds": [
+              "fldN4TVLqfL52ZFex"
+            ],
+            "result": {
+              "type": "singleLineText"
+            }
+          },
           "id": "fldKruU2uexjdknRu",
-          "name": "portco_name",
+          "name": "portco_title",
           "description": "Name of the portco entity. Also the title of the record, used to identify the record in the visual editor. "
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldN4TVLqfL52ZFex",
+          "name": "portco_name"
         },
         {
           "type": "multipleRecordLinks",
@@ -939,6 +960,11 @@
           "description": "This is the name of the file"
         },
         {
+          "type": "singleLineText",
+          "id": "fldPifTw3P8P68CjS",
+          "name": "description"
+        },
+        {
           "type": "multipleRecordLinks",
           "options": {
             "linkedTableId": "tblXvdDlsM2GtKofQ",
@@ -989,20 +1015,36 @@
             "choices": [
               {
                 "id": "selSW3uER1DGUDPOV",
-                "name": "memo"
+                "name": "Memo"
               },
               {
                 "id": "selDCpWCxgOsET6sd",
-                "name": "teaser"
+                "name": "Teaser"
               },
               {
                 "id": "selXqVz6hW4SC1KIp",
-                "name": "newsletter"
+                "name": "Newsletter"
+              },
+              {
+                "id": "selPKVmHhpwE3LoVP",
+                "name": "Statement"
+              },
+              {
+                "id": "selIip20fT38CdhjL",
+                "name": "Report"
+              },
+              {
+                "id": "selKx5WwzE3Luu5oy",
+                "name": "Tax"
+              },
+              {
+                "id": "selO0GkWxrLIvF6xH",
+                "name": "Subscription"
               }
             ]
           },
           "id": "fldRxpDgHrLkfzBqc",
-          "name": "Tags",
+          "name": "type",
           "description": "Multi-select field used for simplifying user searches for files."
         },
         {
@@ -1034,11 +1076,12 @@
           "type": "formula",
           "options": {
             "isValid": true,
-            "formula": "IF(OR(FIND('staging', {fld5WUnicYRve2cz6} & ''), AND(NOT({fldRsUdlF6Jei2Iya}), NOT({fldLYinaE8Fr81B21}))), 'admin_only', IF({fldLYinaE8Fr81B21}, 'account_specific', IF({fldRsUdlF6Jei2Iya}, 'portco_specific', '')))",
+            "formula": "IF(\r\n  OR(\r\n    AND(NOT({fldRsUdlF6Jei2Iya}), NOT({fldLYinaE8Fr81B21}), NOT({fldP5b4bs3O9q7cnX})),\r\n    AND({fldRsUdlF6Jei2Iya}, {fldLYinaE8Fr81B21}),\r\n    AND({fldRsUdlF6Jei2Iya}, {fldP5b4bs3O9q7cnX}),\r\n    AND({fldLYinaE8Fr81B21}, {fldP5b4bs3O9q7cnX}),\r\n    AND({fldRsUdlF6Jei2Iya}, {fldLYinaE8Fr81B21}, {fldP5b4bs3O9q7cnX}),\r\n    {fld5WUnicYRve2cz6} != 'available'\r\n  ),\r\n  'admin_only',\r\n  IF(\r\n    {fldRsUdlF6Jei2Iya},\r\n    'portco',\r\n    IF(\r\n      {fldLYinaE8Fr81B21},\r\n      'account',\r\n      IF(\r\n        {fldP5b4bs3O9q7cnX},\r\n        'investment',\r\n        'admin_only'\r\n      )\r\n    )\r\n  )\r\n)\r\n",
             "referencedFieldIds": [
-              "fld5WUnicYRve2cz6",
               "fldRsUdlF6Jei2Iya",
-              "fldLYinaE8Fr81B21"
+              "fldLYinaE8Fr81B21",
+              "fldP5b4bs3O9q7cnX",
+              "fld5WUnicYRve2cz6"
             ],
             "result": {
               "type": "singleLineText"

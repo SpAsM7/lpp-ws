@@ -28,6 +28,73 @@ We use Airtable as our primary database, with Supabase handling only authenticat
    - Validates all Airtable configuration at runtime
    - Includes table ID validation
 
+### Schema Generation Pattern
+
+1. **Schema Fetcher**:
+   - Location: `src/lib/airtable/schema-fetcher.ts`
+   - Fetches latest schema from Airtable
+   - Maps field types to TypeScript types
+   - Returns `null` for unsupported types
+   - Special handling for rollup fields (always `string[]`)
+   - Preserves raw schema in JSON format
+
+2. **Generated Files**:
+   - `src/types/airtable-types.ts`: TypeScript interfaces
+   - `src/lib/airtable/schemas.ts`: Raw schemas for airtable-ts
+   - `src/lib/airtable/validation.ts`: Zod validation schemas
+   - `src/lib/airtable/schema.json`: Raw schema for reference
+   - MUST NOT modify generated files directly
+   - MUST regenerate after any Airtable schema changes
+
+3. **Field Transforms**:
+   - Location: `src/lib/airtable/utils/transforms.ts`
+   - Handles complex field transformations
+   - Used by domain services to transform raw data
+   - Common transforms:
+     - Attachments: `string[] -> { url: string; filename: string; }[]`
+     - Rollups: Ensures array handling
+     - Links: Record ID normalization
+
+### Usage Pattern
+
+1. **Schema Layer**:
+   - Keep types simple and aligned with Airtable's API
+   - Let transforms handle complex field structures
+   - Filter out unsupported types
+   - Document special cases in schema.json
+
+2. **Transform Layer**:
+   - Centralize all transforms in utils
+   - Keep transforms pure and well-documented
+   - Handle null/undefined cases consistently
+   - Used by domain services, not schema generation
+
+3. **Domain Layer**:
+   - Import and use transforms as needed
+   - Handle access validation separately
+   - Focus on business logic
+   - Maintain type safety through the chain
+
+### Type Safety Pattern
+
+1. **Schema Types**:
+   - Simple types matching Airtable's API
+   - Nullable fields where appropriate
+   - Array types for multi-value fields
+   - Special handling documented in schema.json
+
+2. **Runtime Validation**:
+   - Zod schemas for runtime checks
+   - Validation happens after transforms
+   - Error handling at domain level
+   - Clear error messages for debugging
+
+3. **Access Patterns**:
+   - Validate access in domain services
+   - Use centralized validation utilities
+   - Handle user_id fields consistently
+   - Document access patterns clearly
+
 ### Fetching & Updating Schema
 
 We maintain type safety by automatically generating TypeScript types from the Airtable schema. To update the schema:
@@ -39,26 +106,40 @@ We maintain type safety by automatically generating TypeScript types from the Ai
 
 This will:
 - Fetch the latest schema from Airtable
-- Generate TypeScript interfaces in `src/types/airtable-schema.ts`
-- Save the raw schema as JSON in `src/lib/airtable/schema.json`
+- Generate three separate type files:
+  - TypeScript interfaces in `src/types/airtable-types.ts`
+  - Raw schemas in `src/lib/airtable/schemas.ts`
+  - Zod validation in `src/lib/airtable/validation.ts`
+- Save raw schema as JSON in `src/lib/airtable/schema.json`
 
 ### Generated Files
 
-1. `src/types/airtable-schema.ts`:
+1. `src/types/airtable-types.ts`:
    - Contains TypeScript interfaces for all tables
    - Used for type checking and autocompletion
    - Do not edit manually
-   - **Schema Type Rules**:
-     - All field types MUST be nullable (e.g., `string | null`)
-     - Attachment fields MUST use:
-       - Interface type: `{ url: string; filename: string; }[] | null`
-       - Schema type: `"attachments"`
-     - Array fields MUST preserve nullability (e.g., `string[] | null`)
 
-2. `src/lib/airtable/schema.json`:
+2. `src/lib/airtable/schemas.ts`:
+   - Contains raw schemas for airtable-ts
+   - Used for runtime API interactions
+   - Do not edit manually
+
+3. `src/lib/airtable/validation.ts`:
+   - Contains Zod schemas for runtime validation
+   - Used for data validation
+   - Do not edit manually
+
+4. `src/lib/airtable/schema.json`:
    - Raw schema from Airtable API
    - Includes field IDs, types, and options
    - Useful for debugging and documentation
+
+### Schema Generation Rules
+- MUST use schema-fetcher to generate all types
+- MUST NOT modify generated files directly
+- MUST regenerate after any Airtable schema changes
+- MUST verify type consistency across all three layers
+- MUST NOT mix access validation with type generation
 
 ## Server-Side Only Pattern
 
@@ -164,7 +245,7 @@ All Airtable operations MUST be server-side only. Key files and methods:
 - MUST type the `data` field appropriately for each action
 
 ### Schema Types
-- Location: `src/types/airtable-schema.ts`
+- Location: `src/types/airtable-types.ts`
 - Generated Types:
   - `FilesFields`: Type for files table
   - `ActivitiesFields`: Type for activities table
@@ -181,9 +262,78 @@ All Airtable operations MUST be server-side only. Key files and methods:
   - `NormalizedUserProfile`: Normalized user profile data
 
 ### Schema Generation
-- Location: `src/lib/airtable/schema-fetcher.ts`
+
+1. **Schema Fetcher** (`src/lib/airtable/schema-fetcher.ts`)
+   - Generates three files:
+     - `src/types/airtable-types.ts` - TypeScript interfaces
+     - `src/lib/airtable/schemas.ts` - Raw schemas
+     - `src/lib/airtable/validation.ts` - Zod schemas
+   - Keeps special field types simple:
+     - Attachments: `string[] | null`
+     - Rollups: `string[] | null`
+     - Links: `string[] | null`
+   - Raw schema preserved in `schema.json` for reference
+
+2. **Generated Files**
+   - MUST NOT be modified directly
+   - MUST be regenerated after Airtable schema changes
+   - MUST maintain type consistency across all three layers
+
+## Field Transforms
+
+1. **Transform Layer** (`src/lib/airtable/utils/transforms.ts`)
+   - Centralizes all field transformations
+   - Handles complex field types:
+     - Attachments: Convert to `{ url: string; filename: string; }[]`
+     - Rollups: Normalize array handling
+     - Links: Process linked record data
+
+2. **Usage Pattern**
+   - Domain services import transforms from airtable utils
+   - Apply transforms when processing records
+   - Keep transforms pure and focused on data conversion
+   - Handle null/undefined cases consistently
+
+3. **Flow**
+   Schema Fetcher -> Simple Types -> Transforms -> Domain Services
+
+4. **Rules**
+   - MUST use centralized transforms for consistency
+   - MUST handle null cases in transforms
+   - MUST document transform function purposes
+   - MUST NOT mix business logic with transforms
+
+## Access Validation Pattern
+
+### Centralized Access Control
+- Location: `src/lib/airtable/utils/validate-access.ts`
 - Key Methods:
-  - `fetchSchema()`: Fetches and generates schema types
+  - `validateRecordAccess(record, supabaseId)`: Validates single record access
+  - `filterRecordsByAccess(records, supabaseId)`: Filters array of records by access
+
+### Implementation Rules
+- MUST validate access BEFORE returning any record data
+- MUST use centralized validation utilities for all record access
+- MUST NOT implement custom access checks
+- MUST check `user_id` field which contains comma-separated list of authorized Supabase UUIDs
+- MUST handle access denied with standard error response:
+  ```typescript
+  type ActionResponse<T> = {
+    success: boolean;
+    message: string;
+    error?: {
+      code: 'ACCESS_DENIED' | 'FETCH_ERROR' | 'NOT_FOUND';
+      details: string;
+    };
+    data?: T;
+  };
+  ```
+### Usage Pattern
+- MUST validate single records with `validateRecordAccess`
+- MUST filter record arrays with `filterRecordsByAccess`
+- MUST validate in service layer before any transformations
+- MUST NOT expose records without validation
+- MUST log access denied events for security monitoring
 
 ## Type Safety Patterns
 
@@ -191,7 +341,7 @@ All Airtable operations MUST be server-side only. Key files and methods:
 
 All fields in our Airtable integration require three layers of type safety to work correctly:
 
-1. **Schema Definition** (for airtable-ts)
+1. **Schema Definition** (for airtable-ts) in `src/lib/airtable/schemas.ts`:
    - Tells airtable-ts how to handle API interactions
    - Uses simplified types that the library understands
    ```ts
@@ -204,7 +354,7 @@ All fields in our Airtable integration require three layers of type safety to wo
    } as const satisfies Table<UsersFields>;
    ```
 
-2. **TypeScript Interface** (for compile-time type safety)
+2. **TypeScript Interface** (for compile-time type safety) in `src/types/airtable-types.ts`:
    - Defines the exact shape of our data
    - More specific than schema definitions
    ```ts
@@ -215,21 +365,27 @@ All fields in our Airtable integration require three layers of type safety to wo
    }
    ```
 
-3. **Zod Schema** (for runtime validation)
+3. **Zod Schema** (for runtime validation) in `src/lib/airtable/validation.ts`:
    - Validates data at runtime
    - Matches TypeScript interface structure
    ```ts
    export const UsersSchema = z.object({
      name: z.string().nullable().optional(),
      age: z.number().nullable().optional(),
-     avatar: z.optional(z.array(  // Complex validation for attachments
-       z.object({ 
-         url: z.string(), 
-         filename: z.string() 
-       })
-     ).nullable())
+     avatar: z.array(z.object({  // Complex validation for attachments
+       url: z.string(),
+       filename: z.string()
+     })).nullable().optional()
    });
    ```
+
+### Type Generation Pattern
+- Uses single-pass type resolution
+- Handles computed fields uniformly
+- Returns null for unsupported types
+- Logs warnings for debugging
+- Maintains type consistency across layers
+- Separates access validation from type generation
 
 ## Special Cases - Attachments
 
