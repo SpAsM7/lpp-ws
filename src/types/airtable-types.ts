@@ -35,7 +35,7 @@ export interface AccountsFields extends BaseFields {
   roles?: string[] | null;
   investments?: string[] | null;
   files?: string[] | null;
-  Deployed?: string[] | null;
+  Deployed?: number[] | null;
   email_by_account?: string[] | null;
   user_id?: string[] | null;
   account_type?: string | null;
@@ -63,10 +63,10 @@ export interface PortcosFields extends BaseFields {
   portco_title?: string | null;
   portco_name?: string | null;
   investments?: string[] | null;
-  Capital?: string[] | null;
+  Capital?: number[] | null;
   files?: string[] | null;
   email_by_portco?: string[] | null;
-  Units?: string[] | null;
+  Units?: number[] | null;
   Ownership?: number | null;
   user_id?: string[] | null;
   website?: string | null;

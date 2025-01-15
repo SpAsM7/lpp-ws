@@ -67,9 +67,18 @@ interface SchemaResponse {
 }
 
 function getBaseType(field: Field): string | null {
-  // Special case: rollups are always string arrays
+  // Handle rollups by looking at their result type
   if (field.type === "rollup") {
-    return "string[]";
+    if (!field.options?.result) {
+      console.warn(`No result type found for rollup field: ${field.name}`);
+      return null;
+    }
+    // Get the base type for whatever kind of field is being rolled up
+    const baseType = getBaseType({
+      ...field,
+      type: field.options.result.type
+    });
+    return baseType ? `${baseType}[]` : null;
   }
 
   // Handle computed fields by looking at their result type
@@ -182,7 +191,7 @@ import { z } from 'zod';
   tables.forEach(table => {
     const tableName = capitalize(table.name.replace(/[^a-zA-Z0-9]/g, '_'));
     
-    // Generate TypeScript interface
+    // Generate TypeScript interface (always include | null for type safety)
     typesContent += `export interface ${tableName}Fields extends BaseFields {
 ${table.fields.map(field => {
   const fieldName = field.name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -192,7 +201,7 @@ ${table.fields.map(field => {
 }).filter(Boolean).join('\n')}
 }\n\n`;
 
-    // Generate schema
+    // Generate schema (include | null for all fields)
     schemasContent += `export const ${table.name.toLowerCase()}Table = {
   name: '${table.name}',
   baseId: process.env.AIRTABLE_BASE_ID!,
@@ -220,23 +229,19 @@ ${table.fields.map(field => {
 });\n\n`;
   });
 
-  // Save files
+  // Write the generated files
   writeFileSync(
     resolve(process.cwd(), 'src/types/airtable-types.ts'),
     typesContent
   );
-
   writeFileSync(
     resolve(process.cwd(), 'src/lib/airtable/schemas.ts'),
     schemasContent
   );
-
   writeFileSync(
     resolve(process.cwd(), 'src/lib/airtable/validation.ts'),
     validationContent
   );
-
-  // Save raw schema as JSON for debugging and reference
   writeFileSync(
     resolve(process.cwd(), 'src/lib/airtable/schema.json'),
     JSON.stringify({ tables }, null, 2)

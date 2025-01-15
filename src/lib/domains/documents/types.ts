@@ -12,9 +12,15 @@ export const documentSchema = z.object({
   documentUrl: z.string().nullable(),
 });
 
+// Schema for linked account
+export const linkedAccountSchema = z.object({
+  id: z.string(),
+  title: z.string().nullable().transform(val => val || 'Untitled Account'),
+});
+
 export const documentWithRelationsSchema = documentSchema.extend({
   portco: z.string().nullable(),
-  account: z.string().nullable(),
+  account: linkedAccountSchema.nullable(),
   investment: z.string().nullable(),
 });
 
