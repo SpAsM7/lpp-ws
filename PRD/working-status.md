@@ -132,3 +132,77 @@
 - [ ] Update any remaining imports across codebase
 - [ ] Add logging for schema generation process
 - [ ] Consider adding schema validation tests
+
+
+#### Transition Plan
+
+##### Phase 1: Setup & Infrastructure (No Code Changes)
+
+- Add official Airtable SDK as dependency
+- Remove airtable-ts dependency
+- Update environment variable documentation to match official SDK requirements
+
+##### Phase 2: Core Airtable Infrastructure (Updates to Existing Files)
+
+- Update centralized Airtable client:
+  - Update `src/lib/airtable/client.ts` with official SDK initialization
+  - Add enhanced error handling and retry logic
+  - Update config validation
+- Update schema generation system:
+  - Update `schema-fetcher.ts` for official SDK compatibility
+  - Regenerate schema files after updates (`schemas.ts`, `validation.ts`, `schema.json`)
+  - Add npm script for easy schema regeneration
+- Update existing utilities:
+  - Update `utils/transforms.ts` with enhanced field transformations
+  - Update `utils/validate-access.ts` for improved access control
+- Create new utilities:
+  - Create `utils/resolve-linked-records.ts` for relationship handling
+
+##### Phase 3: Query Layer Implementation
+
+- Create new query modules:
+  - Create `queries/documents.ts` for document-related queries
+  - Implement caching strategy
+  - Add proper error handling and access control
+- Create domain services:
+  - Create `domains/documents/services/document-service.ts`
+  - Create `domains/documents/types.ts`
+  - Ensure all queries go through centralized query layer
+
+##### Phase 4: Migration
+
+- Create migration checklist for each component using airtable-ts
+- Migrate components in this order:
+  - Document list view
+  - Document detail view
+  - Document search/filter functionality
+  - Document upload/management features
+- For each component:
+  - Replace airtable-ts imports with new query layer
+  - Update types to use new schema
+  - Add proper error handling
+  - Implement caching strategy
+  - Test thoroughly
+
+##### Phase 5: Testing & Validation
+
+- Add comprehensive tests:
+  - Unit tests for transforms and utilities
+  - Integration tests for query layer
+  - End-to-end tests for critical document flows
+- Validate:
+  - Type safety across all layers
+  - Access control implementation
+  - Cache invalidation logic
+  - Error handling paths
+
+##### Phase 6: Documentation & Cleanup
+
+- Update documentation:
+  - Add migration guide for future components
+  - Document new query patterns
+  - Update component documentation
+- Clean up:
+  - Remove all airtable-ts references
+  - Remove unused types and utilities
+  - Verify no duplicate query patterns exist

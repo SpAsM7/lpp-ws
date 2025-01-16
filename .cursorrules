@@ -315,21 +315,23 @@ We rely on **Supabase** exclusively for user sign-up, log-in, and password reset
 All investment, document, role, and account data is kept in **Airtable**, while Supabase handles authentication only.
 
 1. **Architecture**:
-   - MUST use airtable-ts instead of the official Airtable SDK
+   - MUST use the official Airtable SDK for all Airtable operations
+   - MUST pin Airtable SDK version in package.json (no `^` or `~`)
+   - MUST NOT use any other Airtable client libraries
    - MUST keep all Airtable operations in `/src/lib/airtable`
    - MUST store credentials (base IDs, API keys) in environment variables
    - MUST use TypeScript interfaces for all Airtable tables
    - MUST NEVER use `any` types for Airtable records
 
 2. **File Organization**:
-   - `/src/lib/airtable/client.ts` - airtable-ts client configuration
+   - `/src/lib/airtable/client.ts` - Airtable SDK client configuration
    - `/src/lib/airtable/schema-fetcher.ts` - Schema generation utility
    - `/src/lib/airtable/schema.json` - Raw schema reference
    - `/src/types/airtable-schema.ts` - Generated TypeScript types
    - `/src/lib/airtable/queries.ts` - Reusable queries
 
 3. **Data Access Patterns**:
-   - **Server Components**: Use airtable-ts directly
+   - **Server Components**: Use Airtable SDK directly
    - **Client Components**: Use Server Actions for Airtable operations
    - **API Routes**: Use SDK only for external integrations/webhooks
    - MUST NOT fetch same data in child components if parent has it
@@ -558,9 +560,9 @@ All investment, document, role, and account data is kept in **Airtable**, while 
 ## 15. Dependencies/Packages
 
 1. **Airtable**  
-   - MUST use airtable-ts package for all Airtable operations
-   - MUST pin airtable-ts version in package.json (no `^` or `~`)
-   - MUST NOT use the official Airtable SDK directly
+   - MUST use the official Airtable SDK for all Airtable operations
+   - MUST pin Airtable SDK version in package.json (no `^` or `~`)
+   - MUST NOT use any other Airtable client libraries
    - MUST keep schema in sync using schema-fetcher
    - MUST NEVER commit tokens or keys
 

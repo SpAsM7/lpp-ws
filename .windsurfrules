@@ -41,7 +41,7 @@ This project is a Next.js-based LP Portal that provides limited partners with a 
 
 ### Law #0: AlwaysFollow the Rules
 
-When making changes, **MUST** follow these sections of `/PRD/coding-rules.md` based on the type of change:
+When making changes, **MUST** follow these sections based on the type of change:
 
 1. **UI Changes**
    - **MUST** follow Section 16 (Styling & Theme) for all styling decisions
@@ -170,7 +170,7 @@ Remember:
 
 ```
 /
-├── app/                   # Next.js App Router (pages and API routes)
+├── app/                    # Next.js App Router (pages and API routes)
 │   ├── (auth)/            # Auth pages and their specific components
 │   │   └── _components/   # Components used ONLY by auth pages
 │   ├── (dashboard)/       # Main pages and their specific components
@@ -237,90 +237,18 @@ Remember:
    - MUST use barrel exports (`index.ts`) for public module APIs
    - MUST use explicit imports (no `import *`)
 
-## 6. Next.js 15 Breaking Changes
+## 6. Route Structure
 
-1. **Server Actions**
-   - **MUST** declare all Server Actions as async functions:
-     ```ts
-     // Before (will error in Next.js 15)
-     export function myAction() {}
-     
-     // After (required in Next.js 15)
-     export async function myAction() {}
-     ```
-   - This applies to:
-     - All functions marked with 'use server'
-     - All functions in files marked with 'use server'
-     - All Server Action functions passed to forms
-   - **MUST NOT** use non-async Server Actions even if they don't contain async operations
-
-2. **Cookie Handling**  
-   - **MUST** handle `cookies()` as an async operation:
-     ```ts
-     const cookieStore = await cookies()
-     ```
-   - **MUST** make cookie operations async in server components and route handlers:
-     ```ts
-     cookies: {
-       async get(name: string) {
-         return (await cookieStore).get(name)?.value
-       },
-       async set(name: string, value: string) {
-         (await cookieStore).set(name, value)
-       },
-       async remove(name: string) {
-         (await cookieStore).delete(name)
-       }
-     }
-     ```
-   - **MUST** handle both request and response cookies in middleware:
-     ```ts
-     set(name: string, value: string, options: CookieOptions) {
-       // Set on request
-       request.cookies.set({ name, value, ...options })
-       // Set on response
-       response.cookies.set({ name, value, ...options })
-     }
-     ```
-
-3. **Fetch Caching**  
-   - Fetch requests are no longer cached by default
-   - **MUST** explicitly opt-in to caching with `cache: 'force-cache'`:
-     ```ts
-     // Not cached
-     const data = await fetch('https://api.example.com')
-     
-     // Cached
-     const data = await fetch('https://api.example.com', { 
-       cache: 'force-cache' 
-     })
-     ```
-   - **MAY** use `fetchCache = 'default-cache'` segment config to opt-in entire layouts/pages
-
-4. **Route Handlers**  
-   - `GET` functions in Route Handlers are no longer cached by default
-   - **MUST** explicitly opt-in to caching with route config:
-     ```ts
-     export const dynamic = 'force-static'
-     export async function GET() {}
-     ```
-
-5. **Client-side Router Cache**  
-   - Page segments are no longer reused from client-side router cache
-   - **MAY** opt-in to caching with `staleTimes` config:
-     ```ts
-     // next.config.js
-     module.exports = {
-       experimental: {
-         staleTimes: {
-           dynamic: 30,
-           static: 180,
-         },
-       },
-     }
-     ```
-
-6. **Error Handling**  
-   - **MUST** handle async errors in cookie operations
-   - **MUST** provide fallbacks for cookie operations that may fail
-   - **MUST** handle cases where cookies are not available or accessible
+1. **API routes** MUST go in `/app/api/**/route.ts`  
+2. **API routes** MUST NOT be affected by route groups  
+3. **Pages** MUST go in folder matching their URL path:  
+   - URL `/auth/login` → `/app/auth/login/page.tsx`  
+   - URL `/dashboard` → `/app/dashboard/page.tsx`  
+4. **Route groups** MUST ONLY be used for organizing pages (e.g., `(auth)` group)  
+5. **Route groups** MUST NOT contain API routes  
+6. All request-specific APIs (`cookies`, `headers`, `params`, `searchParams`) MUST be async  
+7. **Next.js Layouts**  
+   - Route-level `layout.tsx` MUST be used for shared UI within route groups  
+   - Route-level `layout.tsx` MUST NOT contain complex component logic  
+8. MUST use App Router in `/app` - MUST NOT use the legacy Pages Router  
+9. Route groups SHOULD NOT be nested more than two levels deep

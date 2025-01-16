@@ -1,14 +1,13 @@
-# Working Status – Documents UI Airtable Integration
+# Documents UI Airtable Integration
 
 ## Overview
-Implementation plan for integrating Documents UI with Airtable. This document is the **authoritative reference** for file locations, function names, and **must/ must not** patterns.
+This document is the **authoritative reference** for how the Documents UI integrates with Airtable. It covers file locations, function names, and **must / must not** patterns. All development related to the Documents page **must** follow these rules.  
 
-> **Documentation Guidelines**
-> - Specify **exact file paths** for all components, types, and utilities  
+> **Documentation Guidelines**  
+> - Specify **exact file paths** for components, types, and utilities  
 > - List **complete function names** with parameters  
 > - Document **all required patterns** with clear MUST/MUST NOT rules  
 > - Maintain **up-to-date** references to key dependencies  
-> - Include **specific implementation steps** with clear prerequisites  
 > - **Do not** include code snippets unless critical  
 > - Update this document whenever:
 >   - Adding new file paths/functions/hooks  
@@ -20,24 +19,23 @@ Implementation plan for integrating Documents UI with Airtable. This document is
 ## Critical Rules
 
 1. **Schema & Generated Files**  
-   - **MUST NEVER** modify these generated files directly:
+   - **MUST NEVER** modify the following generated files directly:
      - `src/types/airtable-types.ts`  
-     - `src/lib/airtable/schemas.ts`  
      - `src/lib/airtable/validation.ts`  
-   - **MUST** discuss **all** schema changes before implementing  
-   - **MUST** wait for **explicit approval** before making Airtable changes  
-   - **MUST** regenerate types with `schema-fetcher` after changes  
-   - **MUST** verify type consistency across all layers  
-   - **MUST NOT** mix access validation with type generation  
+     - `src/lib/airtable/schema.json`  
+   - **MUST** discuss **all** schema changes before making updates in Airtable  
+   - **MUST** regenerate types via `src/lib/airtable/schema-fetcher.ts` after structural changes  
+   - **MUST** verify type consistency across TypeScript + Zod
+   - **MUST NOT** embed access checks in schema generation  
 
-2. **UI Preservation**  
-   - **MUST** preserve existing UI design exactly  
-   - **MUST NOT** modify or add new UI components without approval  
-   - **MUST** focus **only** on Airtable integration logic  
-   - **MUST** limit UI changes to:
-     - PDF preview modal/overlay  
-     - Loading states  
-     - “No documents found” message  
+2. **UI Changes**  
+   - **MUST** follow Section 16 (Styling & Theme) from `coding-rules.md`
+   - **MUST** use shadcn composition pattern for styling
+   - **MUST** get explicit approval before introducing new UI components
+   - **MUST** only alter UI for approved changes:
+     - PDF preview overlays  
+     - Loading states and skeletons  
+     - “No documents found” messages  
      - Type filter dropdown (if missing)  
 
 ---
@@ -49,20 +47,146 @@ Implementation plan for integrating Documents UI with Airtable. This document is
    - `AIRTABLE_BASE_ID`  
    - `AIRTABLE_DOCUMENTS_TABLE_ID`  
    - `SUPABASE_URL`  
-   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_ANON_KEY`  
 
 2. **Schema Generation**  
-   ```bash
-   pnpm tsx src/lib/airtable/schema-fetcher.ts
-   ```
+   - Run the following to update the schema and regenerate TypeScript + Zod:
+     ```bash
+     pnpm tsx src/lib/airtable/schema-fetcher.ts
+     ```
+   - This ensures `airtable-types.ts`, `validation.ts`, and `schema.json` match Airtable.
 
 ---
 
-## Required Patterns
+## Folder & File Structure (Key Parts)
 
-### Data Layer Patterns
+```
+src/
+├── lib/
+│   └── airtable/
+│       ├── client.ts                        // Official Airtable SDK usage
+│       ├── queries/
+│       │   ├── accounts.ts                  // Accounts-related Airtable queries (example)
+│       │   ├── documents.ts                 // Documents-related Airtable queries
+│       │   └── ...
+│       ├── cache/
+│       │   ├── keys.ts                      // Cache key generation
+│       │   ├── strategies.ts                // Cache durations / invalidation rules
+│       │   └── store.ts                     // Cache storage (Redis, Memory, etc.)
+│       ├── schema-fetcher.ts                // Auto-generates schemas & validation from Airtable
+│       ├── validation.ts                    // Zod-based runtime validation (generated)
+│       ├── schema.json                      // Debug reference for raw schema (generated)
+│       └── utils/
+│           ├── resolve-linked-records.ts    // Batch fetch of linked recs + user checks
+│           ├── transforms.ts                // Field transforms (attachments, rollups, linked recs)
+│           └── validate-access.ts           // Access checks using user_id fields
+├── actions/
+│   └── documents/                            // Server actions for Documents
+│       └── get-documents.ts                 // Example action for fetching doc list
+│       └── ...
+├── domains/
+│   └── documents/
+│       ├── services/
+│       │   └── document-service.ts          // Core domain logic for Documents
+│       │   └── document-transform.ts        // Domain-specific transformations
+│       │   └── get-attachment-url.ts        // Attachment handling
+│       │   └── ...
+│       ├── hooks/
+│       │   └── use-documents.ts             // React Query hooks for document data
+│       │   └── ...
+│       └── types.ts                         // Domain-level TS types for Documents
+│       └── ...
+├── components/
+│   └── ...                                   // Shared UI components
+└── ...
+app/
+└── (dashboard)/
+    └── documents/
+        ├── [id]/
+        │   └── page.tsx                     // Document detail page
+        ├── loading.tsx                      // Loading skeleton
+        ├── error.tsx                        // Error boundary
+        └── page.tsx                         // Main Documents page (list)
+      ...
+```
 
-1. **Session Management**  
+---
+
+## Type Safety & Data Flow
+
+### Two-Layer Model
+
+1. **TypeScript Layer** (`src/types/airtable-types.ts`)  
+   - Generated TypeScript interfaces for Airtable fields
+   - Used for type-safe access to Airtable data
+2. **Validation** (`validation.ts`)  
+   - Runtime validation of data fetched from Airtable
+
+**MUST** not manually edit any of these files—they're regenerated by `schema-fetcher.ts`.
+
+---
+
+## Documents: Domain & Queries
+
+### Documents Airtable Queries
+
+- **File**: `src/lib/airtable/queries/documents.ts`  
+  - `fetchDocuments(): Promise<AirtableRecord[]>` (example)  
+  - `fetchDocumentById(docId: string): Promise<AirtableRecord | null>`  
+  - **MUST** do only raw retrieval from Airtable  
+  - **MUST NOT** perform user access checks here
+  - **MUST** use types from `airtable-types.ts`
+
+### Documents Domain Services
+
+- **Folder**: `src/lib/domains/documents/services/`  
+  - `document-service.ts`: Core business logic (e.g., `getDocumentsForUser()`)
+  - `document-transform.ts`: Document-specific transformations
+  - `get-attachment-url.ts`: Attachment handling
+  - **MUST**:
+    - Use queries from `documents.ts` for raw data
+    - Apply access control using `validate-access.ts`
+    - Use transforms from `transforms.ts` for field handling
+    - Use types from `airtable-types.ts`
+
+### Documents Server Actions
+
+- **Folder**: `src/lib/actions/documents/`  
+  - E.g. `get-documents.ts`, `update-document.ts`, etc.  
+  - **MUST** handle incoming requests with the user's `supabaseId`  
+  - **MUST** use domain services
+  - **MUST NOT** contain direct Airtable logic or transformations
+  - **MUST** use types from `airtable-types.ts`
+
+### Documents React Query Hooks
+
+- **File**: `src/lib/domains/documents/hooks/use-documents.ts`
+  - **MUST** wrap server actions using React Query
+  - **MUST** handle loading and error states
+  - **MUST** use types from `airtable-types.ts`
+
+---
+
+## Access Control
+
+- **Airtable `user_id` Field**  
+  - Each record has a `user_id` array listing all user UUIDs allowed access.
+  - **MUST** filter out any record if the requesting `supabaseId` is not found in `user_id`.
+
+- **File**: `src/lib/airtable/utils/validate-access.ts`  
+  - `validateRecordAccess(record, supabaseId)`: returns `true` if user’s ID is in `record.user_id`.  
+  - `filterRecordsByAccess(records, supabaseId)`: returns only those records the user can view.
+
+- **MUST** always call `validateRecordAccess` or `filterRecordsByAccess` **before** returning data.
+
+- **Linked Records**  
+  - If a record is linked, we must check each linked record’s `user_id` as well.  
+  - If unauthorized, do not expose linked data.  
+  - Implemented in `resolve-linked-records.ts`, combined with `validate-access.ts`.
+
+## Session Management
+   
+   - **MUST** follow Section 8 (Authentication) from `coding-rules.md`
    - **MUST** use Supabase’s built-in session management:
      - **Server**: `createServerClient` (`src/lib/supabase/server.ts`)  
      - **Client**: `createBrowserClient` (`src/lib/supabase/client.ts`)  
@@ -71,185 +195,109 @@ Implementation plan for integrating Documents UI with Airtable. This document is
    - **MUST** use secure, HTTP-only cookies  
    - **MUST** pick the appropriate Supabase client for server/client/middleware  
 
-2. **Airtable Client Management**  
-   - **MUST** use `airtable-ts` in `src/lib/airtable/client.ts`  
-   - **MUST** cache the client at module level:
-     ```ts
-     let airtableClient: ReturnType<typeof createClient> | null = null;
-     ```
-   - **MUST** validate config in `validateAirtableConfig()`  
-   - **MUST** use env variables for table IDs  
-   - **MUST NOT** create new Airtable clients in components or actions  
+## Airtable Client Usage
 
-3. **Type Safety Pattern**  
-   - **MUST** maintain **three-layer** type safety:
-     1. **Schema Definition** (`src/lib/airtable/schemas.ts`)
-     2. **TypeScript Interface** (`src/types/airtable-types.ts`)
-     3. **Zod Schema** (`src/lib/airtable/validation.ts`)  
-   - **MUST** handle attachments with correct transformations  
-   - **MUST** validate data via Zod  
-   - **MUST** keep these layers in sync  
-   - For modification rules, see [Critical Rules](#critical-rules).
-
-4. **Field Transforms Pattern**  
-   - **MUST** use centralized transforms from `src/lib/airtable/utils/transforms.ts`  
-   - **Transforms** are pure, focusing on data conversion (attachments, rollups, links, etc.)  
-   - **Linked Records**:
-     - Must batch process to avoid N+1 queries  
-     - Must maintain type safety across the three layers  
-     - Must handle null/undefined/circular references  
-
-   **Usage Flow**:  
-   ```
-   Schema Fetcher → Simple Types → Transforms → Domain Services
-   ```
-   **Rules**:
-   - **MUST** keep transforms side-effect free  
-   - **MUST** handle edge cases consistently  
-   - **MUST** validate access **before** transforming linked records  
-
-5. **Data Access Pattern**  
-   - **MUST** use **Server Components** for direct Airtable access  
-   - **MUST** use **Server Actions** for client-initiated ops  
-   - **MUST** validate access using `src/lib/airtable/utils/validate-access.ts`:  
-     - `validateRecordAccess(record, supabaseId)`  
-     - `filterRecordsByAccess(records, supabaseId)`  
-   - **MUST** filter by user’s `supabase_uuid`  
-   - **MUST** implement pagination with `scanDocuments()`  
-   - **MUST** batch changes when possible  
-   - **MUST NOT** create custom checks outside `validate-access.ts`
-
-   **Linked Records Access**:
-   - Handled in `resolve-linked-records.ts`  
-   - Must separate concerns:
-     1. Data fetching in `resolve-linked-records.ts`
-     2. Access validation in `validate-access.ts`
-     3. Transforms in `transforms.ts`  
-   - **MUST** batch fetch linked records  
-   - **MUST** validate parent + linked records  
-   - **MUST** return `null` for inaccessible links  
-
-6. **Access Validation Pattern**
-   - **MUST** be centralized in `validate-access.ts`  
-   - **MUST** validate before returning any data  
-   - **MUST** check `user_id` (comma-separated Supabase UUIDs)  
-   - **MUST NOT** return data without checking  
-   - **MUST** use consistent errors for denial  
-   - For mixing access and type generation, see [Critical Rules](#critical-rules).
-
-7. **React Query Pattern**
-   - **MUST** implement in `src/lib/domains/documents/hooks/`:
-     - `useDocumentList`
-     - `useDocumentSearch`
-   - **MUST** use:
-     - `staleTime = 5min`
-     - `gcTime = 30min`
-   - **MUST** handle loading/error states
-   - **MUST** implement cache invalidation
-
-8. **Attachment Pattern**
-   - **MUST** handle attachment URLs in:
-     - `getAttachmentUrl.ts`
-     - `validateAttachmentAccess.ts`
-   - **MUST** check user permissions  
-   - **MUST** handle URL expiration  
-   - **MUST** handle errors for missing/invalid attachments  
+- **File**: `src/lib/airtable/client.ts`  
+  - Contains the official Airtable SDK configuration.  
+  - Must “cache” or store the `Airtable.Base` instance at the module scope.  
+- **MUST** not instantiate the SDK in components.  
+- **MUST** not store credentials directly in code—use environment variables.
 
 ---
 
-### UI Layer Patterns
+## Field Transforms & Special Fields
 
-1. **Component Architecture**
-   - **MUST** place page components in `app/(dashboard)/documents/`:
-     - `page.tsx` (list)
-     - `[id]/page.tsx` (detail)
-     - `loading.tsx`
-     - `error.tsx`
-   - **MUST** put page-specific components in `app/(dashboard)/documents/_components/`
-   - **MUST** move them to `src/components/documents/` **only** if reused  
-   - **MUST** default to **Server Components**  
-   - **MUST** mark as **Client** only if needed (search, modal, interactions)
+- **File**: `src/lib/airtable/utils/transforms.ts`  
+  - **Attachments**:  
+    - Store them as arrays of objects: `{ url, filename, size? }`.  
+    - Handle null or empty arrays gracefully.  
+  - **Linked Records**:  
+    - Store them initially as `string[]` of record IDs, then resolve + check user access.  
+  - **Rollups**:  
+    - Store as arrays of `string` or `number`, depending on underlying field.  
+    - Convert or parse if needed for domain usage.  
+  - **Lookups**:  
+    - Treat them similarly to rollups (arrays of strings or numbers).  
+    - Ensure consistent shape after transforms.
 
-2. **Loading State Pattern**
-   - **MUST** implement `loading.tsx` in `app/(dashboard)/documents/`
-   - **MUST** create skeleton components:
-     - `DocumentListSkeleton.tsx`
-     - `DocumentPreviewSkeleton.tsx`
-     - `DocumentSearchSkeleton.tsx`
-   - **MUST** add “No documents found” in `DocumentList.tsx`
-   - **MUST** wrap client comps in Suspense
-
-3. **Error Handling Pattern**
-   - **MUST** define errors in `src/lib/errors/documents.ts`
-   - **MUST** implement error boundaries at:
-     - `documents/error.tsx` (page level)
-     - `DocumentList/error.tsx` (list level)
-     - `DocumentPreview/error.tsx` (preview level)
-   - **MUST** provide recovery UI for each error
-   - **MUST** log errors server-side
-
-4. **Styling Pattern**
-   - **MUST** use **shadcn** components from `src/components/ui/`:
-     - Table, Dialog, Input, Select
-   - **MUST** use semantic tokens from theme
-   - **MUST** handle responsive layouts
-   - **MUST** handle dark mode  
+**MUST** keep transforms pure (no side effects, no direct HTTP calls).
 
 ---
 
-## Key Files & Functions
+## React Query & Domain Hooks
 
-### Data Layer
+- **Folder**: `src/lib/domains/documents/hooks/`  
+  - E.g. `useDocumentList()`, `useDocumentDetails(docId)`, etc.
+  - **MUST**:
+    - Call server actions or domain services to fetch data.  
+    - Return `{ data, error, isLoading, ... }` in standard React Query style.  
+  - **MUST** show loading skeletons in the UI if `isLoading`.  
+  - **MUST** display error toasts or messages if `error`.  
+  - **MUST NOT** directly call the Airtable SDK from here.
 
-1. **Airtable Schema & Types**
-   - `src/types/airtable-types.ts` (TS interfaces)  
-   - `src/lib/airtable/schemas.ts` (airtable-ts schemas)  
-   - `src/lib/airtable/validation.ts` (Zod schemas)  
-   - `src/lib/airtable/schema.json` (raw schema)  
-   - `src/lib/airtable/schema-fetcher.ts` (schema generation)  
-   > See [Critical Rules #1](#critical-rules).
+---
 
-2. **Domain Types**
-   - **Location**: `src/lib/domains/documents/types.ts`
-     - `Document`
-     - `DocumentWithRelations`
-     - `DocumentActionResponse<T>`
+## UI Layer: Documents Pages & Components
 
-3. **Server Actions**
-   - **Location**: `src/lib/actions/documents/`
-     - `getDocumentsForUser(supabaseId, options)`
-     - `getDocumentById(id, supabaseId)`
-     - `searchDocuments(query, supabaseId, options)`
-     - `getDocumentsByCompany(companyId, supabaseId)`
-     - `getDocumentsByAccount(accountId, supabaseId)`
-     - `getDocumentsByType(type, supabaseId)`
+1. **Pages** (in `app/(dashboard)/documents/`):  
+   - `page.tsx`: Lists user’s documents.  
+   - `[id]/page.tsx`: Shows document details.  
+   - `loading.tsx`: Global or route-based loading state.  
+   - `error.tsx`: Error boundary for route-level issues.  
 
-4. **Domain Services**
-   - **Location**: `src/lib/domains/documents/services/`
-     - `document-service.ts` (core logic)
-     - `document-transform.ts` (data transformations)
+2. **Components** (if needed in a shared area):  
+   - `src/components/documents/DocumentList.tsx`  
+   - `src/components/documents/DocumentPreview.tsx`  
+   - etc.
 
-5. **Domain Hooks**
-   - **Location**: `src/lib/domains/documents/hooks/`
-     - `useDocumentList(options)`
-     - `useDocumentSearch(query)`
+**MUST**:  
+- Use domain hooks (`useDocumentList`, etc.) to get data.  
+- Display skeleton or spinner when `isLoading`.  
+- Display user-friendly message or toast on error.  
+- Not make direct Airtable calls.
 
-### UI Layer
+---
 
-1. **Page Components**
-   - **Location**: `app/(dashboard)/documents/`
-     - `page.tsx` (main list)
-     - `[id]/page.tsx` (detail)
-     - `loading.tsx` (loading states)
-     - `error.tsx` (errors)
+## Caching & Performance
 
-2. **Shared Components**
-   - **Location**: `src/components/documents/`
-     - `document-list/` (`DocumentList.tsx`, `DocumentListItem.tsx`, etc.)
-     - `document-search/` (`DocumentSearch.tsx`, etc.)
-     - `document-preview/` (`DocumentPreview.tsx`, etc.)
+- **Folder**: `src/lib/airtable/queries/cache/`  
+  - `strategies.ts`: Defines a standard TTL (e.g., 5 minutes).  
+  - `keys.ts`: Consistent cache key naming.  
+  - `store.ts`: Memory or Redis-based store.  
+- **MUST** use these cache utilities if caching is needed for Documents.  
+- **MUST** define durations in `strategies.ts`.  
+- **MUST** invalidate or clear cache on updates.  
+- **MUST NOT** create separate caching logic outside `cache/`.
 
-3. **Error Handling**
-   - **Location**: `src/lib/errors/documents.ts`
-     - Document-specific error messages
-     - Error boundary components
+---
+
+## Error Handling
+
+- **Structured Errors**:  
+  - Return typed objects: `{ code, message }` or a custom type.  
+  - Do not expose internal details or secrets.  
+- **Logging**:  
+  - If critical, log server-side with context.  
+- **UI Errors**:  
+  - Show toasts or error components to the user; do not leak stack traces.  
+- **Documents-Specific Errors**:  
+  - Could live in `src/lib/errors/documents.ts`, if needed.  
+
+---
+
+## Must / Must Not Summary
+
+1. **Must** generate schema files with `schema-fetcher.ts` and never edit them manually.  
+2. **Must** run `validateRecordAccess` (or `filterRecordsByAccess`) before returning data to a user.  
+3. **Must** store attachments as arrays of objects (`{ url, filename, size? }`).  
+4. **Must** keep linked records as `string[]` of record IDs, then resolve + check user access.  
+5. **Must** handle rollups/lookups as arrays (`string[]` or `number[]`), with transforms if needed.  
+6. **Must** only call the official Airtable SDK in `client.ts` or `queries/`.  
+7. **Must** not call Airtable directly from React components.  
+8. **Must** preserve Documents UI design in `app/(dashboard)/documents/`.  
+9. **Must** rely on domain hooks (`useDocuments`, etc.) for React Query usage.  
+10. **Must** standardize cache durations in `strategies.ts`.  
+11. **Must** avoid partial data leaks if the user’s ID is not in `record.user_id`.  
+12. **Must** use server actions in `src/lib/actions/documents/` for client-initiated requests.  
+13. **Must** not embed business logic in transforms (`transforms.ts`).  
+14. **Must** handle all environment variables in `docs/environment-setup.md`.  
